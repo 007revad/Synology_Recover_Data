@@ -45,4 +45,3 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 
 <p align="center">DSM 7 with storage pools and volumes</p>
 <p align="center"><img src="/images/image-2.png"></p>
-
