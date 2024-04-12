@@ -50,18 +50,20 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 ### Setup in Ubuntu
 
 1. Open Firefox from the tool bar and go to [https://github.com/007revad/Synology_Recover_Data](https://github.com/007revad/Synology_Recover_Data/releases) and download the latest release's zip file.
-2. Open Files from the tool bar and click on Downloads, right-click on the zip and select Extract.
+2. Open Files from the tool bar and click on Downloads, right-click on the zip file and select Extract.
 3. Right-click on the syno_restore_data.sh file and select Properties.
     - Click Permissions.
     - Change others Access to Read and write.
     - Tick Allow executing file as program.
-5. Click on the Applications icon on the bottom left of the desktop.
-6. Right-click on Terminal and click on Save to favorites.
+5. Copy syno_recover_data.sh up 1 level to home.
+6. 
+7. Click on the Applications icon on the bottom left of the desktop.
+8. Right-click on Terminal and click on Save to favorites.
 
 ### Running the script
 
-1. Open Terminal from the left bar.
-2. Type `sudo -i 
+1. Open Terminal from the tool bar.
+2. Type `sudo -i /home/ubuntu/syno_recover_data.sh` and press enter.
 
 ### Screenshots
 
