@@ -25,7 +25,7 @@ The same environment rules as on Synology's web page apply:
 **Applicable to:**
 - DSM version 6.2.x and above
 - Volumes using the Btrfs or ext4 file systems
-- Ubuntu version 18.041
+- Ubuntu version 19.10 (Synology's recommended 18.04 has a bug with persistent partition)
 
 **Not applicable to:**
 - Volumes using read-write SSD cache
@@ -35,6 +35,15 @@ The same environment rules as on Synology's web page apply:
 - Encrypted shared folders
 
 At the moment the script only support mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
+
+### Recover data using a PC
+
+1. Make sure your PC has sufficient drive slots for drive installation.
+2. Remove the drives from your Synology NAS and install them in your PC. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
+3. Download [Ubuntu version 19.10](https://old-releases.ubuntu.com/releases/19.10/)
+4. Prepare an Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
+  - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so you can download this script to it later.
+5. 
 
 ### Screenshots
 
