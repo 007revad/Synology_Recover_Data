@@ -44,7 +44,7 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 4. Prepare an Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so you can download this script to it.
   <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/rufus.png"></p>
-5. Once Rufus has finished creating the boot drive download the <a href="https://github.com/007revad/Synology_Recover_Data/releases">latest version of this script</a> to the partition on the USB boot drive.
+5. Once Rufus has finished creating the boot drive download the <a href="https://github.com/007revad/Synology_Recover_Data/releases">latest version of this script</a> to the partition on the USB boot drive and unzip it.
 
 ### Screenshots
 
