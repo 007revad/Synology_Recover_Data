@@ -1,9 +1,29 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2002
-# https://kb.synology.com/en-id/DSM/tutorial/How_can_I_recover_data_from_my_DiskStation_using_a_PC
+#---------------------------------------------------------------------------------------
+# Recover data from Synology drives using a computer
+#
+# GitHub: https://github.com/007revad/Synology_Recover_Data
+# Script verified at https://www.shellcheck.net/
+#
+# Run in Ubuntu terminal:
+# sudo -i /home/ubuntu/syno_recover_data.sh
+#
+# https://kb.synology.com/en-global/DSM/tutorial/How_can_I_recover_data_from_my_DiskStation_using_a_PC
+#---------------------------------------------------------------------------------------
 
 #mount_path="/home/ubuntu/mount"
 mount_path="/home/ubuntu"
+
+
+scriptver="v0.0.3"
+script=Synology_Recover_Data
+#repo="007revad/Synology_Recover_Data"
+#scriptname=syno_recover_data
+
+# Show script version
+#echo -e "$script $scriptver\ngithub.com/$repo\n"
+echo -e "$script $scriptver\n"
 
 # Shell Colors
 #Black='\e[0;30m'   # ${Black}
@@ -52,20 +72,21 @@ while [[ ! -d $mount_path ]]; do
     read -r mount_path
 done
 
-
-## Install mdadm, lvm2 and btrfs-progs
-#echo -e "\nInstalling mdadm, lvm2 and btrfs-progs"
-##apt-get update
-##apt-get install -y mdadm lvm2 btrfs-progs
-
-# Install mdadm (latest lvm2 and btrfs-progs included in Ubuntu 19.10 and later)
-echo -e "\nInstalling mdadm"
-apt-get update
-apt-get install -y mdadm
-
+# Install mdadm, lvm2 and btrfs-progs if missing
+install_executable(){ 
+    # $1 is mdadm, lvm2 or btrfs-progs
+    if ! which "$1" >/dev/null; then
+        echo -e "\nInstalling $1"
+        apt-get update
+        apt-get install -y "$1"
+    fi
+}
+install_executable mdadm
+install_executable lvm2
+install_executable btrfs-progs
 
 # Assemble all the drives removed from the Synology NAS
-if which mdadm ; then
+if which mdadm >/dev/null; then
     echo -e "\nAssembling your Synology drives"
     # mdadm options:
     # -A --assemble  Assemble a previously created array.
@@ -83,7 +104,6 @@ else
     echo "mdadm not install!"
     exit 1
 fi
-
 
 # Get device path(s)
 if lvs | grep 'volume_' >/dev/null; then
@@ -192,4 +212,5 @@ else
 fi
 
 exit
+
 

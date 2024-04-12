@@ -1,3 +1,6 @@
+v0.0.3-beta
+- Minor improvements.
+
 v0.0.2-beta
 - Bug fix for the default mount path: mount_path="/home/ubuntu"
 - Bug fix to stop the script if mdadm failed to install.
