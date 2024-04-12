@@ -44,7 +44,7 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 4. You'll need an 8GB or larger USB drive.
 5. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
-    <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/rufus.png"></p>
+    <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp;<img src="/images/rufus.png"></p>
 6. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set ti to boot from the USB drive, and boot into Ubuntu.
 
 ### Setup in Ubuntu
