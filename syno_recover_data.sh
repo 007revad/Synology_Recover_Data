@@ -2,7 +2,8 @@
 # shellcheck disable=SC2002
 # https://kb.synology.com/en-id/DSM/tutorial/How_can_I_recover_data_from_my_DiskStation_using_a_PC
 
-mount_path="/HOME/ubuntu"
+#mount_path="/home/ubuntu/mount"
+mount_path="/home/ubuntu"
 
 # Shell Colors
 #Black='\e[0;30m'   # ${Black}
@@ -51,20 +52,38 @@ while [[ ! -d $mount_path ]]; do
     read -r mount_path
 done
 
-# Install mdadm, lvm2 and btrfs-progs
-echo -e "\nInstalling mdadm, lvm2 and btrfs-progs"
+
+## Install mdadm, lvm2 and btrfs-progs
+#echo -e "\nInstalling mdadm, lvm2 and btrfs-progs"
+##apt-get update
+##apt-get install -y mdadm lvm2 btrfs-progs
+
+# Install mdadm (latest lvm2 and btrfs-progs included in Ubuntu 19.10 and later)
+echo -e "\nInstalling mdadm"
 apt-get update
-apt-get install -y mdadm lvm2 btrfs-progs
+apt-get install -y mdadm
+
 
 # Assemble all the drives removed from the Synology NAS
-echo -e "\nAssembling your Synology drives"
-# mdadm options:
-# -A --assemble  Assemble a previously created array.
-# -s --scan      Scan config file for missing information.
-# -f --force     Assemble the array even if some superblocks appear out-of-date.
-#                This involves modifying the superblocks.
-# -R --run       Try to start the array even if not enough devices for a full array are present.
-mdadm -AsfR && vgchange -ay
+if which mdadm ; then
+    echo -e "\nAssembling your Synology drives"
+    # mdadm options:
+    # -A --assemble  Assemble a previously created array.
+    # -s --scan      Scan config file for missing information.
+    # -f --force     Assemble the array even if some superblocks appear out-of-date.
+    #                This involves modifying the superblocks.
+    # -R --run       Try to start the array even if not enough devices for a full array are present.
+    if ! mdadm -AsfR && vgchange -ay ; then
+        ding
+        echo "Assembling drives failed!"
+        exit 1
+    fi
+else
+    ding
+    echo "mdadm not install!"
+    exit 1
+fi
+
 
 # Get device path(s)
 if lvs | grep 'volume_' >/dev/null; then
@@ -137,6 +156,8 @@ get_mount_dir(){
 }
 
 get_mount_dir "$device_path"
+
+#echo "mount_dir: $mount_dir"  # debug
 
 
 # Check user is ready
