@@ -42,7 +42,8 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 2. Remove the drives from your Synology NAS and install them in your PC. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
 3. Download [Ubuntu version 19.10](https://old-releases.ubuntu.com/releases/19.10/)
 4. Prepare an Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
-  - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so you can download this script to it later.
+    - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so you can download this script to it later.
+  <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/rufus.png"></p>
 5. 
 
 ### Screenshots
