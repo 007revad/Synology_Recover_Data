@@ -9,4 +9,39 @@
 
 A script to make it easy to recover your data from your Synology's drives using a computer
 
-WIP See https://github.com/007revad/Synology_recover_data/tree/develop if you're interested in testing the script.
+### This is still a work in progress...
+
+If you are willing to test it, all feedback is welcome.
+
+### What does the script do?
+
+The script automatically does steps 4 to 15 from this web page: <br>
+https://kb.synology.com/en-id/DSM/tutorial/How_can_I_recover_data_from_my_DiskStation_using_a_PC
+
+So you need to do steps 1 to 3 from that web page.
+
+The same environment rules as on Synology's web page apply:
+
+**Applicable to:**
+- DSM version 6.2.x and above
+- Volumes using the Btrfs or ext4 file systems
+- Ubuntu version 18.041
+
+**Not applicable to:**
+- Volumes using read-write SSD cache
+
+**Currently the script does NOT support:**
+- Encrypted volumes
+- Encrypted shared folders
+
+At the moment the script only support mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
+
+### Screenshots
+
+<p align="center">DSM 6 single volume</p>
+<p align="center"><img src="/images/image-1.png"></p>
+
+<br>
+
+<p align="center">DSM 7 with storage pools and volumes</p>
+<p align="center"><img src="/images/image-2.png"></p>
