@@ -32,13 +32,13 @@ The same environment rules as on Synology's web page apply:
 
 At the moment the script only support mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
 
-### DSM screenshots
+### Screenshots
 
-<p align="center">Classic RAID with single volume</p>
+<p align="center">DSM 6 single volume</p>
 <p align="center"><img src="/images/image-1.png"></p>
 
 <br>
 
-<p align="center">2 Classic RAID/SHR with multiple volume volumes</p>
+<p align="center">DSM 7 with storage pools and volumes</p>
 <p align="center"><img src="/images/image-2.png"></p>
 
