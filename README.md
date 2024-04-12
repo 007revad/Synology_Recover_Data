@@ -39,7 +39,7 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 ### Setup to recover data using a PC
 
 1. Make sure your PC has sufficient drive slots for drive installation (you can use a USB dock).
-2. Remove the drives from your Synology NAS and install them in your PC. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
+2. Remove the drives from your Synology NAS and install them in your PC or USB dock. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
 3. Download the Desktop image for [Ubuntu version 22.04.4 LTS](https://releases.ubuntu.com/jammy/)
 4. You'll need an 8GB or larger USB drive.
 5. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
