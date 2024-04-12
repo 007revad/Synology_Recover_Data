@@ -9,6 +9,10 @@
 
 A script to make it easy to recover your data from your Synology's drives using a computer
 
+### This is still a work in progress...
+
+If you are willing to test it, all feedback is welcome.
+
 ### What does the script do?
 
 The script automatically does steps 4 to 15 from this web page: <br>
