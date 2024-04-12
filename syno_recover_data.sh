@@ -163,7 +163,7 @@ mount "${device_path}" "${mount_path}/${mount_dir}" -o ro
 code="$1"
 
 # Finished
-if [[ code != "0" ]]; then
+if [[ $code != "0" ]]; then
     ding
     echo -e "${Error}ERROR${Off} Failed to mount volume!"
 else
