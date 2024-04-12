@@ -65,6 +65,7 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 
 1. Open Terminal from the tool bar.
 2. Type `sudo -i /home/ubuntu/syno_recover_data.sh` and press enter.
+    <p align="left"> &nbsp; &nbsp; &nbsp; <img src="/images/run-script.png"></p>
 
 ### Screenshots
 
