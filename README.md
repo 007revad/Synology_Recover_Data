@@ -36,15 +36,32 @@ The same environment rules as on Synology's web page apply:
 
 At the moment the script only support mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
 
-### Recover data using a PC
+### Setup to recover data using a PC
 
 1. Make sure your PC has sufficient drive slots for drive installation (you can use a USB dock).
 2. Remove the drives from your Synology NAS and install them in your PC. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
 3. Download the Desktop image for [Ubuntu version 22.04.4 LTS](https://releases.ubuntu.com/jammy/)
-4. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
-    - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so you can download this script to it.
-  <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/rufus.png"></p>
-5. Once Rufus has finished creating the boot drive download the <a href="https://github.com/007revad/Synology_Recover_Data/releases">latest version of this script</a> to the partition on the USB boot drive and unzip it.
+4. You'll need an 8GB or larger USB drive.
+5. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
+    - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
+    <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/rufus.png"></p>
+6. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set ti to boot from the USB drive, and boot into Ubuntu.
+
+### Setup in Ubuntu
+
+1. Open Firefox from the left bar and go to [https://github.com/007revad/Synology_Recover_Data](https://github.com/007revad/Synology_Recover_Data/releases) and download the latest release's zip file.
+2. Open Files from the left bar and click on Downloads, right-click on the zip and select Extract.
+3. Right-click on the syno_restore_data.sh file and select Properties.
+    - Click Permissions.
+    - Change others Access to Read and write.
+    - Tick Allow executing file as program.
+5. Click on the Applications icon on the bottom left of the desktop.
+6. Right-click on Terminal and click on Save to favorites.
+
+### Running the script
+
+1. Open Terminal from the left bar.
+2. Type `sudo -i 
 
 ### Screenshots
 
