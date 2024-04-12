@@ -55,9 +55,9 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
     - Click Permissions.
     - Change others Access to Read and write.
     - Tick Allow executing file as program.
-    <p align="left"> &nbsp; &nbsp;<img src="/images/script-permissions.png"></p>
+    <p align="left"> &nbsp; &nbsp; <img src="/images/script-permissions.png"></p>
 5. Copy syno_recover_data.sh up 1 level to home.
-    <p align="left"> &nbsp; &nbsp;<img src="/images/home.png"></p>
+    <p align="left"> &nbsp; &nbsp; <img src="/images/home.png"></p>
 6. 
 7. Click on the Applications icon on the bottom left of the desktop.
 8. Right-click on Terminal and click on Save to favorites.
