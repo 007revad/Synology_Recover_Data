@@ -41,7 +41,7 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 1. Make sure your PC has sufficient drive slots for drive installation (you can use a USB dock).
 2. Remove the drives from your Synology NAS and install them in your PC. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
 3. Download the Desktop image for [Ubuntu version 22.04.4 LTS](https://releases.ubuntu.com/jammy/)
-4. Prepare an Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
+4. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so you can download this script to it.
   <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/rufus.png"></p>
 5. Once Rufus has finished creating the boot drive download the <a href="https://github.com/007revad/Synology_Recover_Data/releases">latest version of this script</a> to the partition on the USB boot drive and unzip it.
