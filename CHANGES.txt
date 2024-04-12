@@ -1,1 +1,4 @@
-
+v0.0.2
+- Bug fix for the default mount path: mount_path="/home/ubuntu"
+- Bug fix to stop the script if mdadm failed to install.
+- Changed to only install mdadm because lvm2 and btrfs-progs are included in Ubuntu.
