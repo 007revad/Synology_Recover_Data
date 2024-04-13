@@ -73,6 +73,11 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 
 <br>
 
-<p align="center">DSM 6 single volume</p>
+<p align="center">DSM 7 SHR single volume</p>
+<p align="center"><img src="/images/image-vg1000.png"></p>
+
+<br>
+
+<p align="center">DSM 6 Classic RAID single volume</p>
 <p align="center"><img src="/images/image-md.png"></p>
 
