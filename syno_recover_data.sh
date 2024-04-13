@@ -16,14 +16,14 @@
 mount_path="/home/ubuntu"
 
 
-scriptver="v0.0.4"
+scriptver="v0.0.5"
 script=Synology_Recover_Data
 #repo="007revad/Synology_Recover_Data"
 #scriptname=syno_recover_data
 
 # Show script version
 #echo -e "$script $scriptver\ngithub.com/$repo\n"
-echo -e "\n$script $scriptver"
+echo "$script $scriptver"
 
 # Shell Colors
 #Black='\e[0;30m'   # ${Black}
@@ -75,7 +75,8 @@ done
 # Install mdadm, lvm2 and btrfs-progs if missing
 install_executable(){ 
     # $1 is mdadm, lvm2 or btrfs-progs
-    if ! apt list --installed | grep -q "^${1}/"; then
+    #if ! apt list --installed | grep -q "^${1}/"; then  # Don't use apt in script
+    if ! apt-cache show "$1" >/dev/null; then
         echo -e "\nInstalling $1"
         if [[ $aptget_updated != "yes" ]]; then
             apt-get update
