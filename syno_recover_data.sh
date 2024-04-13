@@ -16,7 +16,7 @@
 mount_path="/home/ubuntu"
 
 
-scriptver="v0.0.5"
+scriptver="v0.0.6"
 script=Synology_Recover_Data
 #repo="007revad/Synology_Recover_Data"
 #scriptname=syno_recover_data
@@ -100,12 +100,12 @@ if which mdadm >/dev/null; then
     # -R --run       Try to start the array even if not enough devices for a full array are present.
     if ! mdadm -AsfR && vgchange -ay ; then
         ding
-        echo "Assembling drives failed!"
+        echo -e "${Error}ERROR${Off} Assembling drives failed!"
         exit 1
     fi
 else
     ding
-    echo "mdadm not install!"
+    echo -e "${Error}ERROR${Off} mdadm not installed!"
     exit 1
 fi
 
