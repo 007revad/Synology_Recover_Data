@@ -53,9 +53,8 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 2. Open Files from the tool bar and click on Downloads, right-click on the zip file and select Extract.
 3. Right-click on the syno_restore_data.sh file and select Properties.
     - Click Permissions.
-    - Change others Access to Read and write.
     - Tick Allow executing file as program.
-    <p align="left"> &nbsp; &nbsp; &nbsp; <img src="/images/script-permissions.png"></p>
+    <p align="left"> &nbsp; &nbsp; &nbsp; <img src="/images/script-permissions-2.png"></p>
 4. Copy syno_recover_data.sh up 1 level to home.
     <p align="left"> &nbsp; &nbsp; &nbsp; <img src="/images/home.png"></p>
 5. Click on the Applications icon on the bottom left of the desktop.
