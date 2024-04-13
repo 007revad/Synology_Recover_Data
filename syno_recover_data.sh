@@ -10,6 +10,8 @@
 # sudo -i /home/ubuntu/syno_recover_data.sh
 #
 # https://kb.synology.com/en-global/DSM/tutorial/How_can_I_recover_data_from_my_DiskStation_using_a_PC
+#
+# https://xpenology.com/forum/topic/54545-dsm-7-and-storage-poolarray-functionality/
 #---------------------------------------------------------------------------------------
 
 #mount_path="/home/ubuntu/mount"
@@ -71,6 +73,20 @@ while [[ ! -d $mount_path ]]; do
     echo "Enter a valid path to mount your volume(s) then press enter."
     read -r mount_path
 done
+
+# Check there are RAID arrays that need assembling
+readarray -t array < <(cat /proc/mdstat | grep md | cut -d" " -f1)
+for d in "${array[@]}"; do
+    personality=$(cat /proc/mdstat | grep ^$d | awk '{print $4}')
+    if [[ $personality =~ raid ]] && [[ $personality != "raid1" ]]; then
+        devices+=("/dev/$d")
+    fi
+done
+if [[ ${#devices[@]} -lt "1" ]]; then
+    echo "No RAID arrays found that need mounting."
+#else
+#    echo "${#devices[@]} suitable RAID arrays found."
+fi
 
 # Install mdadm, lvm2 and btrfs-progs if missing
 install_executable(){ 
@@ -135,7 +151,7 @@ elif lvs | grep -E 'vg[0-9][0-9]' >/dev/null; then
     done
 else
     # Classic RAID with single volume
-    readarray -t array < <(cat /proc/mdstat | grep md | cut -d" " -f1)
+    readarray -t array < <(cat /proc/mdstat | grep '^md' | cut -d" " -f1)
 
     # /dev/${md}
     # /dev/md4
