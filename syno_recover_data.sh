@@ -16,14 +16,14 @@
 mount_path="/home/ubuntu"
 
 
-scriptver="v0.0.3"
+scriptver="v0.0.4"
 script=Synology_Recover_Data
 #repo="007revad/Synology_Recover_Data"
 #scriptname=syno_recover_data
 
 # Show script version
 #echo -e "$script $scriptver\ngithub.com/$repo\n"
-echo -e "$script $scriptver\n"
+echo -e "\n$script $scriptver"
 
 # Shell Colors
 #Black='\e[0;30m'   # ${Black}
@@ -44,14 +44,14 @@ ding(){
 # Check script is running as root
 if [[ $( whoami ) != "root" ]]; then
     ding
-    echo -e "${Error}ERROR${Off} This script must be run as sudo or root!"
+    echo -e "\n${Error}ERROR${Off} This script must be run as sudo or root!"
     exit 1  # Not running as root
 fi
 
 # Check script is NOT running on a Synology NAS
 if uname -a | grep -i synology >/dev/null; then
     ding
-    echo "This script is running on a Synology NAS!"
+    echo -e "\nThis script is running on a Synology NAS!"
     echo "You need to run it from a Linux USB boot drive."
     exit 1  # Is a Synology NAS
 fi
@@ -59,7 +59,7 @@ fi
 # Check script is NOT running on a Asustor NAS
 if grep -s 'ASUSTOR' /etc/nas.conf >/dev/null; then
     ding
-    echo "This script is running on an Asustor NAS!"
+    echo -e "\nThis script is running on an Asustor NAS!"
     echo "You need to run it from a Linux USB boot drive."
     exit 1  # Is a Asustor NAS
 fi
@@ -67,7 +67,7 @@ fi
 # Check mount path exists
 while [[ ! -d $mount_path ]]; do
     ding
-    echo -e "${Cyan}$mount_path${Off} folder does not exist!"
+    echo -e "\n${Cyan}$mount_path${Off} folder does not exist!"
     echo "Enter a valid path to mount your volume(s) then press enter."
     read -r mount_path
 done
@@ -75,9 +75,12 @@ done
 # Install mdadm, lvm2 and btrfs-progs if missing
 install_executable(){ 
     # $1 is mdadm, lvm2 or btrfs-progs
-    if ! which "$1" >/dev/null; then
+    if ! apt list --installed | grep -q "^${1}/"; then
         echo -e "\nInstalling $1"
-        apt-get update
+        if [[ $aptget_updated != "yes" ]]; then
+            apt-get update
+            aptget_updated="yes"
+        fi
         apt-get install -y "$1"
     fi
 }
@@ -212,5 +215,4 @@ else
 fi
 
 exit
-
 
