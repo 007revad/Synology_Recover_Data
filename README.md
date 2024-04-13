@@ -68,6 +68,7 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 
 <br>
 
+---
 ### Screenshots
 
 <p align="left">DSM 7 with 2 storage pools and volumes</p>
