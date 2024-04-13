@@ -1,3 +1,6 @@
+v0.0.5-beta
+- Changed from using `apt list --installed` to `apt-cache show`.
+
 v0.0.4-beta
 - Only apt-get install if package is not installed.
 - Only apt-get update once when first package installed.
