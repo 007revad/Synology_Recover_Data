@@ -1,3 +1,6 @@
+v0.0.6-beta
+- Now checks if there are RAID arrays that need assembling before continuing.
+
 v0.0.5-beta
 - Changed from using `apt list --installed` to `apt-cache show`.
 
