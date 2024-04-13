@@ -34,7 +34,7 @@ The same environment rules as on Synology's web page apply:
 - Encrypted volumes
 - Encrypted shared folders
 
-At the moment the script only support mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
+At the moment the script only supports mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
 
 ### Setup to recover data using a PC
 
