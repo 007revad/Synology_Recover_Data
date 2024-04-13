@@ -1,3 +1,6 @@
+v0.0.7-beta
+- Minor bug fix (forgot to stop script if there are no RAID arrays that need assembling).
+
 v0.0.6-beta
 - Now checks if there are RAID arrays that need assembling before continuing.
 
