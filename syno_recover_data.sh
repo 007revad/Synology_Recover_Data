@@ -18,10 +18,9 @@
 mount_path="/home/ubuntu"
 
 
-scriptver="v0.0.7"
+scriptver="v1.0.8"
 script=Synology_Recover_Data
-#repo="007revad/Synology_Recover_Data"
-#scriptname=syno_recover_data
+repo="007revad/Synology_Recover_Data"
 
 # Show script version
 #echo -e "$script $scriptver\ngithub.com/$repo\n"
@@ -74,10 +73,31 @@ while [[ ! -d $mount_path ]]; do
     read -r mount_path
 done
 
+#------------------------------------------------------------------------------
+# Check latest release with GitHub API
+
+# Get latest release info
+# Curl timeout options:
+# https://unix.stackexchange.com/questions/94604/does-curl-have-a-timeout
+release=$(curl --silent -m 10 --connect-timeout 5 \
+    "https://api.github.com/repos/$repo/releases/latest")
+
+# Release version
+tag=$(echo "$release" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+#shorttag="${tag:1}"
+
+if ! printf "%s\n%s\n" "$tag" "$scriptver" |
+        sort --check=quiet --version-sort >/dev/null ; then
+    echo -e "\n${Cyan}There is a newer version of this script available.${Off}"
+    echo -e "Current version: ${scriptver}\nLatest version:  $tag"
+fi
+
+#------------------------------------------------------------------------------
+
 # Check there are RAID arrays that need assembling
 readarray -t array < <(cat /proc/mdstat | grep md | cut -d" " -f1)
 for d in "${array[@]}"; do
-    personality=$(cat /proc/mdstat | grep ^$d | awk '{print $4}')
+    personality=$(cat /proc/mdstat | grep ^"$d" | awk '{print $4}')
     if [[ $personality =~ raid ]] && [[ $personality != "raid1" ]]; then
         devices+=("/dev/$d")
     fi
