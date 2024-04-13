@@ -10,20 +10,22 @@
 # sudo -i /home/ubuntu/syno_recover_data.sh
 #
 # https://kb.synology.com/en-global/DSM/tutorial/How_can_I_recover_data_from_my_DiskStation_using_a_PC
+#
+# https://xpenology.com/forum/topic/54545-dsm-7-and-storage-poolarray-functionality/
 #---------------------------------------------------------------------------------------
 
 #mount_path="/home/ubuntu/mount"
 mount_path="/home/ubuntu"
 
 
-scriptver="v0.0.3"
+scriptver="v0.0.6"
 script=Synology_Recover_Data
 #repo="007revad/Synology_Recover_Data"
 #scriptname=syno_recover_data
 
 # Show script version
 #echo -e "$script $scriptver\ngithub.com/$repo\n"
-echo -e "$script $scriptver\n"
+echo "$script $scriptver"
 
 # Shell Colors
 #Black='\e[0;30m'   # ${Black}
@@ -44,14 +46,14 @@ ding(){
 # Check script is running as root
 if [[ $( whoami ) != "root" ]]; then
     ding
-    echo -e "${Error}ERROR${Off} This script must be run as sudo or root!"
+    echo -e "\n${Error}ERROR${Off} This script must be run as sudo or root!"
     exit 1  # Not running as root
 fi
 
 # Check script is NOT running on a Synology NAS
 if uname -a | grep -i synology >/dev/null; then
     ding
-    echo "This script is running on a Synology NAS!"
+    echo -e "\nThis script is running on a Synology NAS!"
     echo "You need to run it from a Linux USB boot drive."
     exit 1  # Is a Synology NAS
 fi
@@ -59,7 +61,7 @@ fi
 # Check script is NOT running on a Asustor NAS
 if grep -s 'ASUSTOR' /etc/nas.conf >/dev/null; then
     ding
-    echo "This script is running on an Asustor NAS!"
+    echo -e "\nThis script is running on an Asustor NAS!"
     echo "You need to run it from a Linux USB boot drive."
     exit 1  # Is a Asustor NAS
 fi
@@ -67,17 +69,35 @@ fi
 # Check mount path exists
 while [[ ! -d $mount_path ]]; do
     ding
-    echo -e "${Cyan}$mount_path${Off} folder does not exist!"
+    echo -e "\n${Cyan}$mount_path${Off} folder does not exist!"
     echo "Enter a valid path to mount your volume(s) then press enter."
     read -r mount_path
 done
 
+# Check there are RAID arrays that need assembling
+readarray -t array < <(cat /proc/mdstat | grep md | cut -d" " -f1)
+for d in "${array[@]}"; do
+    personality=$(cat /proc/mdstat | grep ^$d | awk '{print $4}')
+    if [[ $personality =~ raid ]] && [[ $personality != "raid1" ]]; then
+        devices+=("/dev/$d")
+    fi
+done
+if [[ ${#devices[@]} -lt "1" ]]; then
+    echo "No RAID arrays found that need mounting."
+#else
+#    echo "${#devices[@]} suitable RAID arrays found."
+fi
+
 # Install mdadm, lvm2 and btrfs-progs if missing
 install_executable(){ 
     # $1 is mdadm, lvm2 or btrfs-progs
-    if ! which "$1" >/dev/null; then
+    #if ! apt list --installed | grep -q "^${1}/"; then  # Don't use apt in script
+    if ! apt-cache show "$1" >/dev/null; then
         echo -e "\nInstalling $1"
-        apt-get update
+        if [[ $aptget_updated != "yes" ]]; then
+            apt-get update
+            aptget_updated="yes"
+        fi
         apt-get install -y "$1"
     fi
 }
@@ -96,12 +116,12 @@ if which mdadm >/dev/null; then
     # -R --run       Try to start the array even if not enough devices for a full array are present.
     if ! mdadm -AsfR && vgchange -ay ; then
         ding
-        echo "Assembling drives failed!"
+        echo -e "${Error}ERROR${Off} Assembling drives failed!"
         exit 1
     fi
 else
     ding
-    echo "mdadm not install!"
+    echo -e "${Error}ERROR${Off} mdadm not installed!"
     exit 1
 fi
 
@@ -131,7 +151,7 @@ elif lvs | grep -E 'vg[0-9][0-9]' >/dev/null; then
     done
 else
     # Classic RAID with single volume
-    readarray -t array < <(cat /proc/mdstat | grep md | cut -d" " -f1)
+    readarray -t array < <(cat /proc/mdstat | grep '^md' | cut -d" " -f1)
 
     # /dev/${md}
     # /dev/md4
@@ -212,5 +232,4 @@ else
 fi
 
 exit
-
 
