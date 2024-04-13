@@ -44,7 +44,7 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 4. You'll need an 8GB or larger USB drive.
 5. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
-    <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp;<img src="/images/rufus.png"></p>
+    <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
 6. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set ti to boot from the USB drive, and boot into Ubuntu.
 
 ### Setup in Ubuntu
@@ -53,11 +53,10 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 2. Open Files from the tool bar and click on Downloads, right-click on the zip file and select Extract.
 3. Right-click on the syno_restore_data.sh file and select Properties.
     - Click Permissions.
-    - Change others Access to Read and write.
     - Tick Allow executing file as program.
-    <p align="left"> &nbsp; &nbsp; &nbsp; <img src="/images/script-permissions.png"></p>
+    <p align="left"> &nbsp; <img src="/images/script-permissions-2.png"></p>
 4. Copy syno_recover_data.sh up 1 level to home.
-    <p align="left"> &nbsp; &nbsp; &nbsp; <img src="/images/home.png"></p>
+    <p align="left"> &nbsp; <img src="/images/home.png"></p>
 5. Click on the Applications icon on the bottom left of the desktop.
 6. Right-click on Terminal and click on Save to favorites.
 
@@ -65,15 +64,23 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 
 1. Open Terminal from the tool bar.
 2. Type `sudo -i /home/ubuntu/syno_recover_data.sh` and press enter.
-    <p align="left"> &nbsp; &nbsp; &nbsp; <img src="/images/run-script.png"></p>
-
-### Screenshots
-
-<p align="center">DSM 7 with 2 storage pools and volumes</p>
-<p align="center"><img src="/images/image-2.png"></p>
+    <p align="left"> &nbsp; <img src="/images/run-script.png"></p>
 
 <br>
 
-<p align="center">DSM 6 single volume</p>
-<p align="center"><img src="/images/image-1.png"></p>
+---
+### Screenshots
+
+<p align="left">DSM 7 with 2 storage pools and volumes</p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-vg2.png"></p>
+
+<br>
+
+<p align="left">DSM 7 SHR single volume</p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-vg1000.png"></p>
+
+<br>
+
+<p align="left">DSM 6 Classic RAID single volume</p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-md.png"></p>
 
