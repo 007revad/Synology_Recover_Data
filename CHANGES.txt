@@ -1,3 +1,6 @@
+v1.0.8
+- Added check if there's a newer version of the script available.
+
 v0.0.7-beta
 - Minor bug fix (forgot to stop script if there are no RAID arrays that need assembling).
 
