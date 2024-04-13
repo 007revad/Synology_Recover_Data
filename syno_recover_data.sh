@@ -18,7 +18,7 @@
 mount_path="/home/ubuntu"
 
 
-scriptver="v0.0.6"
+scriptver="v0.0.7"
 script=Synology_Recover_Data
 #repo="007revad/Synology_Recover_Data"
 #scriptname=syno_recover_data
@@ -83,7 +83,8 @@ for d in "${array[@]}"; do
     fi
 done
 if [[ ${#devices[@]} -lt "1" ]]; then
-    echo "No RAID arrays found that need mounting."
+    echo "No RAID arrays found that need mounting!"
+    exit 1  # No arrays to assemble
 #else
 #    echo "${#devices[@]} suitable RAID arrays found."
 fi
