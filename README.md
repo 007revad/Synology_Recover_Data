@@ -74,5 +74,5 @@ At the moment the script only support mounting 1 volume at a time. You'd need to
 <br>
 
 <p align="center">DSM 6 single volume</p>
-<p align="center"><img src="/images/image-1.png"></p>
+<p align="center"><img src="/images/image-md.png"></p>
 
