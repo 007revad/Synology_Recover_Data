@@ -13,12 +13,30 @@
 #
 # https://xpenology.com/forum/topic/54545-dsm-7-and-storage-poolarray-functionality/
 #---------------------------------------------------------------------------------------
+#
+# WARNING: PV /dev/sdX in VG vgXX is using an old PV header, modify the VG to update
+# https://access.redhat.com/solutions/5906681
+# Can we just ignore the warning and not update header?
+#
+# https://community.synology.com/enu/forum/1/post/155289
+#---------------------------------------------------------------------------------------
+# The latest mdadm does not support DSM's superblock location
+#
+# mount: /dev/XXXX: can't read superblock
+# https://gist.github.com/cllu/5da648850ecfd30211bba140b132e824
+#---------------------------------------------------------------------------------------
+# 
+# Getting old Ubuntu versions to download mdadm
+# https://community.synology.com/enu/forum/1/post/155289
+#---------------------------------------------------------------------------------------
+
 
 #mount_path="/home/ubuntu/mount"
 mount_path="/home/ubuntu"
+#mount_path="/mnt"
 
 
-scriptver="v1.0.8"
+scriptver="v1.0.9"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -73,6 +91,30 @@ while [[ ! -d $mount_path ]]; do
     read -r mount_path
 done
 
+# Set Ubuntu to get older version of mdadm that works with DSM's superblock location
+sed -i "s|archive.ubuntu|old-releases.ubuntu|" /etc/apt/sources.list
+sed -i "s|security.ubuntu|old-releases.ubuntu|" /etc/apt/sources.list
+
+install_executable(){ 
+    # $1 is mdadm, lvm2 or btrfs-progs
+    #if ! apt list --installed | grep -q "^${1}/"; then  # Don't use apt in script
+    if ! apt-cache show "$1" >/dev/null; then
+        echo -e "\nInstalling $1"
+        if [[ $aptget_updated != "yes" ]]; then
+            apt-get update
+            aptget_updated="yes"
+        fi
+        if [[ $1 == "mdadm" ]]; then
+            # apt-get won't install mdadm in Ubuntu 19.10
+            apt install -y mdadm
+        else
+            apt-get install -y "$1"
+        fi
+    fi
+}
+
+install_executable curl
+
 #------------------------------------------------------------------------------
 # Check latest release with GitHub API
 
@@ -94,34 +136,22 @@ fi
 
 #------------------------------------------------------------------------------
 
-# Check there are RAID arrays that need assembling
-readarray -t array < <(cat /proc/mdstat | grep md | cut -d" " -f1)
-for d in "${array[@]}"; do
-    personality=$(cat /proc/mdstat | grep ^"$d" | awk '{print $4}')
-    if [[ $personality =~ raid ]] && [[ $personality != "raid1" ]]; then
-        devices+=("/dev/$d")
-    fi
-done
-if [[ ${#devices[@]} -lt "1" ]]; then
-    echo "No RAID arrays found that need mounting!"
-    exit 1  # No arrays to assemble
-#else
-#    echo "${#devices[@]} suitable RAID arrays found."
-fi
+# # Check there are RAID arrays that need assembling
+# readarray -t array < <(cat /proc/mdstat | grep md | cut -d" " -f1)
+# for d in "${array[@]}"; do
+#    personality=$(cat /proc/mdstat | grep ^"$d" | awk '{print $4}')
+#    if [[ $personality =~ raid ]] && [[ $personality != "raid1" ]]; then
+#        devices+=("/dev/$d")
+#    fi
+# done
+# if [[ ${#devices[@]} -lt "1" ]]; then
+#    echo "No RAID arrays found that need mounting!"
+#    exit 1  # No arrays to assemble
+# #else
+# #    echo "${#devices[@]} suitable RAID arrays found."
+# fi
 
 # Install mdadm, lvm2 and btrfs-progs if missing
-install_executable(){ 
-    # $1 is mdadm, lvm2 or btrfs-progs
-    #if ! apt list --installed | grep -q "^${1}/"; then  # Don't use apt in script
-    if ! apt-cache show "$1" >/dev/null; then
-        echo -e "\nInstalling $1"
-        if [[ $aptget_updated != "yes" ]]; then
-            apt-get update
-            aptget_updated="yes"
-        fi
-        apt-get install -y "$1"
-    fi
-}
 install_executable mdadm
 install_executable lvm2
 install_executable btrfs-progs
@@ -135,11 +165,13 @@ if which mdadm >/dev/null; then
     # -f --force     Assemble the array even if some superblocks appear out-of-date.
     #                This involves modifying the superblocks.
     # -R --run       Try to start the array even if not enough devices for a full array are present.
-    if ! mdadm -AsfR && vgchange -ay ; then
-        ding
-        echo -e "${Error}ERROR${Off} Assembling drives failed!"
-        exit 1
-    fi
+#    if ! mdadm -AsfR && vgchange -ay ; then
+#        ding
+#        echo -e "${Error}ERROR${Off} Assembling drives failed!"
+#        exit 1
+    mdadm -AsfR  # Ignore "no arrays found" because it could be a single drive
+    vgchange -ay
+#    fi
 else
     ding
     echo -e "${Error}ERROR${Off} mdadm not installed!"
@@ -245,11 +277,13 @@ mount "${device_path}" "${mount_path}/${mount_dir}" -o ro
 code="$1"
 
 # Finished
-if [[ $code != "0" ]]; then
-    ding
-    echo -e "${Error}ERROR${Off} Failed to mount volume!"
+if [[ $code -gt "0" ]]; then
+    # Successful mount has null exit code
+    echo -e "\nThe volume is now mounted as read only"
+    echo -e "You can now recover your data from $mount_path\n"
 else
-    echo -e "\nYou can now recover your data from $mount_path\n"
+    ding
+    echo -e "${Error}ERROR${Off} Failed to mount volume!\n"
 fi
 
 exit
