@@ -104,10 +104,10 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 <br>
 
 <p align="left">Accessing your volume from the home folder</p>
-<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_home.png"></p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_home-2.png"></p>
 
 <br>
 
 <p align="left">Accessing your volume from Media on the tool bar</p>
-<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_media.png"></p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_media-2.png"></p>
 
