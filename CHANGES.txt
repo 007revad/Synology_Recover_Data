@@ -1,3 +1,10 @@
+v1.0.9
+- Changed to Ubuntu 19.10 because in Ubuntu 22.04.4 LTS mdadm does not work with DSM's superblock location.
+  - The change to Ubuntu 19.10 required installing curl for the script's new version check to work.
+- Changed to support single drives.
+- Added message that mounted volume is read only.
+- Bug fix for always saying "Failed to mount volume" even when volume mounted correctly.
+
 v1.0.8
 - Added check if there's a newer version of the script available.
 

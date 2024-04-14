@@ -25,7 +25,7 @@ The same environment rules as on Synology's web page apply:
 **Applicable to:**
 - DSM version 6.2.x and above
 - Volumes using the Btrfs or ext4 file systems
-- Ubuntu 22.04.4 LTS (Synology's recommended 18.04 has a bug with persistent partition)
+- Ubuntu 19.10 (Synology's recommended 18.04 has a bug with persistent partition)
 
 **Not applicable to:**
 - Volumes using read-write SSD cache
@@ -40,12 +40,14 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 
 1. Make sure your PC has sufficient drive slots for drive installation (you can use a USB dock).
 2. Remove the drives from your Synology NAS and install them in your PC or USB dock. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
-3. Download the Desktop image for [Ubuntu version 22.04.4 LTS](https://releases.ubuntu.com/jammy/)
-4. You'll need an 8GB or larger USB drive.
-5. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
+3. Download the **Desktop image** for [Ubuntu version 19.10 Eoan Ermine](https://old-releases.ubuntu.com/releases/19.10/)
+5. You'll need a 4GB or larger USB drive.
+6. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
     <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
-6. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set ti to boot from the USB drive, and boot into Ubuntu.
+7. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set it to boot from the USB drive, and boot into Ubuntu.
+    - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubunut on them.
+8. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
 
 ### Setup in Ubuntu
 
@@ -57,8 +59,10 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
     <p align="left"> &nbsp; <img src="/images/script-permissions-2.png"></p>
 4. Copy syno_recover_data.sh up 1 level to home.
     <p align="left"> &nbsp; <img src="/images/home.png"></p>
-5. Click on the Applications icon on the bottom left of the desktop.
-6. Right-click on Terminal and click on Save to favorites.
+5. Click on the Show Applications icon on the bottom left of the desktop.
+6. Type terminal in the search bar.
+7. Right-click on Terminal and click on Save to favorites.
+8. Press Esc twice to return to the desktop.
 
 ### Running the script
 
