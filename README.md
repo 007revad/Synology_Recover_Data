@@ -40,12 +40,14 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 
 1. Make sure your PC has sufficient drive slots for drive installation (you can use a USB dock).
 2. Remove the drives from your Synology NAS and install them in your PC or USB dock. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
-3. Download the Desktop image for [Ubuntu version 22.04.4 LTS](https://releases.ubuntu.com/jammy/)
-4. You'll need an 8GB or larger USB drive.
-5. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
+3. Download the Desktop image for [Ubuntu version 19.10 Eoan Ermine](https://old-releases.ubuntu.com/releases/19.10/)
+5. You'll need an 8GB or larger USB drive.
+6. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
     <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
-6. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set ti to boot from the USB drive, and boot into Ubuntu.
+7. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set it to boot from the USB drive, and boot into Ubuntu.
+    - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubunut on them.
+8. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "Try Ubuntu".
 
 ### Setup in Ubuntu
 
