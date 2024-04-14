@@ -9,6 +9,19 @@
 
 A script to make it easy to recover your data from your Synology's drives using a computer
 
+
+### Confirmed working on
+
+<details>
+  <summary>Click here to see list</summary>
+
+| Model        | DSM version              | RAID type | Notes           |
+| ------------ |--------------------------|-----------|-----------------|
+| DS720+       | DSM 7.2.1-69057 Update 4 | SHR       | Single drive    |
+
+</details>
+
+
 ### What does the script do?
 
 The script automatically does steps 4 to 15 from this web page: <br>
@@ -32,6 +45,7 @@ The same environment rules as on Synology's web page apply:
 
 At the moment the script only supports mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
 
+
 ### Setup to recover data using a PC
 
 1. Make sure your PC has sufficient drive slots for drive installation (you can use a USB dock).
@@ -44,6 +58,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 7. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set it to boot from the USB drive, and boot into Ubuntu.
     - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubunut on them.
 8. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
+
 
 ### Setup in Ubuntu
 
@@ -60,6 +75,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 7. Right-click on Terminal and click on Save to favorites.
 8. Press Esc twice to return to the desktop.
 
+
 ### Running the script
 
 1. Open Terminal from the tool bar.
@@ -67,6 +83,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
     <p align="left"> &nbsp; <img src="/images/run-script.png"></p>
 
 <br>
+
 
 ---
 ### Screenshots
@@ -83,4 +100,14 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 
 <p align="left">DSM 6 Classic RAID single volume</p>
 <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-md.png"></p>
+
+<br>
+
+<p align="left">Accessing your volume from the Home folder</p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_home-2.png"></p>
+
+<br>
+
+<p align="left">Accessing your volume from Media on the tool bar</p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_media-3.png"></p>
 
