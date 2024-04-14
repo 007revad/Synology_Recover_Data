@@ -57,8 +57,8 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 6. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
     <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
-7. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set it to boot from the USB drive, and boot into Ubuntu.
-    - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubunut on them.
+7. Once Rufus has finished creating the boot drive you can reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
+    - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubuntu on them.
 8. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
 
 
