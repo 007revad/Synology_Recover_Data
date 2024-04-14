@@ -15,7 +15,7 @@ A script to make it easy to recover your data from your Synology's drives using 
 <details>
   <summary>Click here to see list</summary>
 
-| Model        | DSM version              | RAID type | Notes           |
+| Drives from  | DSM version              | RAID type | Notes           |
 | ------------ |--------------------------|-----------|-----------------|
 | DS720+       | DSM 7.2.1-69057 Update 4 | SHR       | Single drive    |
 
