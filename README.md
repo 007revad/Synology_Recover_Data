@@ -47,7 +47,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
     <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
 7. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set it to boot from the USB drive, and boot into Ubuntu.
     - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubunut on them.
-8. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "Try Ubuntu".
+8. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
 
 ### Setup in Ubuntu
 
