@@ -15,7 +15,7 @@ A script to make it easy to recover your data from your Synology's drives using 
 <details>
   <summary>Click here to see list</summary>
 
-| Model        | DSM version              | RAID type | Notes           |
+| Drives from  | DSM version              | RAID type | Notes           |
 | ------------ |--------------------------|-----------|-----------------|
 | DS720+       | DSM 7.2.1-69057 Update 4 | SHR       | Single drive    |
 
@@ -51,12 +51,14 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 1. Make sure your PC has sufficient drive slots for drive installation (you can use a USB dock).
 2. Remove the drives from your Synology NAS and install them in your PC or USB dock. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
 3. Download the **Desktop image** for [Ubuntu version 19.10 Eoan Ermine](https://old-releases.ubuntu.com/releases/19.10/)
+   - Synology's recommended 18.04 has a bug with persistent partition so any changes you make in Ubuntu will be lost when you shut down Ubuntu.
+   - Newer Ubuntu versions like 20.04.6 LTS and 22.04.4 LTS require an 8GB USB drive and install an mdadm version that won't work with DSM's superblock location.
 5. You'll need a 4GB or larger USB drive.
 6. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
     <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
-7. Once Rufus has finished creating the boot drive you can reboot the computer, enter the BIOS and set it to boot from the USB drive, and boot into Ubuntu.
-    - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubunut on them.
+7. Once Rufus has finished creating the boot drive you can reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
+    - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubuntu on them.
 8. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
 
 
