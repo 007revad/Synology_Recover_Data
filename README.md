@@ -60,7 +60,9 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 4. Copy syno_recover_data.sh up 1 level to home.
     <p align="left"> &nbsp; <img src="/images/home.png"></p>
 5. Click on the Applications icon on the bottom left of the desktop.
-6. Right-click on Terminal and click on Save to favorites.
+6. Type terminal in the search bar.
+7. Right-click on Terminal and click on Save to favorites.
+8. Press Esc to return to the desktop.
 
 ### Running the script
 
