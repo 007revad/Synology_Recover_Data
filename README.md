@@ -25,7 +25,7 @@ The same environment rules as on Synology's web page apply:
 **Applicable to:**
 - DSM version 6.2.x and above
 - Volumes using the Btrfs or ext4 file systems
-- Ubuntu 22.04.4 LTS (Synology's recommended 18.04 has a bug with persistent partition)
+- Ubuntu 19.10 (Synology's recommended 18.04 has a bug with persistent partition)
 
 **Not applicable to:**
 - Volumes using read-write SSD cache
