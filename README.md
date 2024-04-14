@@ -84,6 +84,17 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 2. Type `sudo -i /home/ubuntu/syno_recover_data.sh` and press enter.
     <p align="left"> &nbsp; <img src="/images/run-script.png"></p>
 
+
+### Accessing your data
+
+There are 2 ways you can access you data:
+
+- Accessing your volume from the Home folder
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_home-2.png"></p>
+
+- Accessing your volume from Media on the tool bar
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_media-4.png"></p>
+
 <br>
 
 
@@ -102,14 +113,4 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 
 <p align="left">DSM 6 Classic RAID single volume</p>
 <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-md.png"></p>
-
-<br>
-
-<p align="left">Accessing your volume from the Home folder</p>
-<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_home-2.png"></p>
-
-<br>
-
-<p align="left">Accessing your volume from Media on the tool bar</p>
-<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/volume_in_media-3.png"></p>
 
