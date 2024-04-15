@@ -9,34 +9,40 @@
 # Run in Ubuntu terminal:
 # sudo -i /home/ubuntu/syno_recover_data.sh
 #
+#---------------------------------------------------------------------------------------
+# Resources used to develop this script:
+#
 # https://kb.synology.com/en-global/DSM/tutorial/How_can_I_recover_data_from_my_DiskStation_using_a_PC
 #
 # https://xpenology.com/forum/topic/54545-dsm-7-and-storage-poolarray-functionality/
+#
 #---------------------------------------------------------------------------------------
+# Ubuntu 20.04.6 LTS and 22.04.4 LTS issues:
 #
 # WARNING: PV /dev/sdX in VG vgXX is using an old PV header, modify the VG to update
 # https://access.redhat.com/solutions/5906681
 # Can we just ignore the warning and not update header?
-#
 # https://community.synology.com/enu/forum/1/post/155289
-#---------------------------------------------------------------------------------------
-# The latest mdadm does not support DSM's superblock location
 #
+# The latest mdadm does not support DSM's superblock location
 # mount: /dev/XXXX: can't read superblock
 # https://gist.github.com/cllu/5da648850ecfd30211bba140b132e824
-#---------------------------------------------------------------------------------------
 # 
+#---------------------------------------------------------------------------------------
+# Ubuntu 19.10 issues (solved)
+#
 # Getting old Ubuntu versions to download mdadm
 # https://community.synology.com/enu/forum/1/post/155289
+#
+# Installing curl fails with 'apt-get install curl' so had to use 'apt install curl'
 #---------------------------------------------------------------------------------------
 
-
-#mount_path="/home/ubuntu/mount"
-mount_path="/home/ubuntu"
 #mount_path="/mnt"
+#mount_path="/media"
+mount_path="/home/ubuntu"
 
 
-scriptver="v1.0.9"
+scriptver="v1.0.10"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -187,24 +193,25 @@ if lvs | grep 'volume_' >/dev/null; then
     # /dev/${VG}/${LV}
     # /dev/vg1/volume_1
     for d in "${array[@]}"; do
-        VG="v$(echo -n "$d" | cut -d"v" -f3 | cut -d" " -f1)"
-        LV="v$(echo -n "$d" | cut -d"v" -f2 | cut -d" " -f1)"
+        LV="$(echo -n "$d" | awk '{print $1}')"
+        VG="$(echo -n "$d" | awk '{print $2}')"
         device_paths+=("/dev/$VG/$LV")
     done
-elif lvs | grep -E 'vg[0-9][0-9]' >/dev/null; then
+elif lvs | grep -E 'vg[0-9][0-9][0-9][0-9]' >/dev/null; then
     # SHR with single volume support
-    readarray -t array < <(lvs | grep -E 'vg[0-9][0-9]')
+    readarray -t array < <(lvs | grep -E 'vg[0-9][0-9][0-9][0-9]')
 
     # lv vg1000 -wi-a----- 43.63t
     # /dev/${VG}/${LV}
-    # /dev/vg1000/LV
+    # /dev/vg1000/lv
     for d in "${array[@]}"; do
-        VG="v$(echo -n "$d" | cut -d"v" -f3 | cut -d" " -f1)"
-        device_paths+=("/dev/$VG/LV")
+        LV="$(echo -n "$d" | awk '{print $1}')"
+        VG="$(echo -n "$d" | awk '{print $2}')"
+        device_paths+=("/dev/$VG/$LV")
     done
 else
     # Classic RAID with single volume
-    readarray -t array < <(cat /proc/mdstat | grep '^md' | cut -d" " -f1)
+    readarray -t array < <(cat /proc/mdstat | grep '^md' | awk '{print $1}')
 
     # /dev/${md}
     # /dev/md4
@@ -242,16 +249,13 @@ get_mount_dir(){
         /dev/md*|/dev/vg*/volume_*)
             mount_dir="$(basename -- "$1")"
             ;;
-        /dev/vg*/LV)
-            mount_dir="$(echo "$1" | cut -d"/" -f2)"
+        /dev/vg*/lv)
+            mount_dir="$(echo "$1" | cut -d"/" -f3)"
             ;;
     esac
 }
 
 get_mount_dir "$device_path"
-
-#echo "mount_dir: $mount_dir"  # debug
-
 
 # Check user is ready
 echo -e "\nType ${Cyan}yes${Off} if you are ready to mount $device_path"
@@ -271,7 +275,7 @@ fi
 
 
 # NEED TO MOUNT EACH DEVICE PATH IN ARRAY IF ALL SELECTED
-# Mount the drives as read only
+# Mount the volume as read only
 echo -e "\nMounting volume(s)"
 mount "${device_path}" "${mount_path}/${mount_dir}" -o ro
 code="$1"
@@ -279,8 +283,11 @@ code="$1"
 # Finished
 if [[ $code -gt "0" ]]; then
     # Successful mount has null exit code
-    echo -e "\nThe volume is now mounted as read only"
-    echo -e "You can now recover your data from $mount_path\n"
+    echo -e "\nThe volume is now mounted as ${Cyan}read only.${Off}\n"
+    echo -e "You can now recover your data from:"
+    echo -e "- ${Cyan}Files > Home > ${mount_dir}${Off}"
+    echo -e "- ${Cyan}Files > ${mount_dir}${Off}"
+    echo -e "- ${Cyan}${mount_path}/${mount_dir}${Off} via Terminal\n"
 else
     ding
     echo -e "${Error}ERROR${Off} Failed to mount volume!\n"
