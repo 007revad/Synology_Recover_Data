@@ -42,7 +42,7 @@
 mount_path="/home/ubuntu"
 
 
-scriptver="v1.0.10"
+scriptver="v1.0.11"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -270,7 +270,11 @@ fi
 # Create mount point(s)
 echo -e "\nCreating mount point folder(s)"
 if [[ ! -d "${mount_path}/$mount_dir" ]]; then
-    mkdir -m777 "${mount_path}/$mount_dir"
+    #mkdir -m777 "${mount_path}/$mount_dir"
+    mkdir -m444 "${mount_path}/$mount_dir"
+
+    # Allow user to unmount volume from UI
+    chown ubuntu "${mount_path}/$mount_dir"
 fi
 
 
@@ -280,17 +284,27 @@ echo -e "\nMounting volume(s)"
 mount "${device_path}" "${mount_path}/${mount_dir}" -o ro
 code="$1"
 
+# mount has the following return codes (the bits can be ORed):
+# 0 success
+# 1 incorrect invocation or permissions
+# 2 system error (out of memory, cannot fork, no more loop devices)
+# 4 internal mount bug or missing nfs support in mount
+# 8 user interrupt
+# 16 problems writing or locking /etc/mtab
+# 32 mount failure
+# 64 some mount succeeded
+
 # Finished
 if [[ $code -gt "0" ]]; then
+    ding
+    echo -e "${Error}ERROR${Off} $code Failed to mount volume!\n"
+else
     # Successful mount has null exit code
     echo -e "\nThe volume is now mounted as ${Cyan}read only.${Off}\n"
     echo -e "You can now recover your data from:"
     echo -e "- ${Cyan}Files > Home > ${mount_dir}${Off}"
     echo -e "- ${Cyan}Files > ${mount_dir}${Off}"
     echo -e "- ${Cyan}${mount_path}/${mount_dir}${Off} via Terminal\n"
-else
-    ding
-    echo -e "${Error}ERROR${Off} Failed to mount volume!\n"
 fi
 
 exit
