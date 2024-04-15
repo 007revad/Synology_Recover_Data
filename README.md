@@ -102,15 +102,15 @@ There are 2 ways you can access you data:
 ### Screenshots
 
 <p align="left">DSM 7 with 2 storage pools and volumes</p>
-<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-vg2.png"></p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-volume_2-2.png"></p>
 
 <br>
 
 <p align="left">DSM 7 SHR single volume</p>
-<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-vg1000.png"></p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-vg1000-2.png"></p>
 
 <br>
 
 <p align="left">DSM 6 Classic RAID single volume</p>
-<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-md.png"></p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-md-2.png"></p>
 
