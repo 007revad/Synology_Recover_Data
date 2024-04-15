@@ -1,6 +1,7 @@
 v1.0.11
 - Bug fix for "Operation not permitted" when trying to unmount volume from GUI.
 - Bug fix for "Failed to mount volume" error when mount succeeded.
+- Bug fix for "The volume is now mounted" when mount failed.
 
 v1.0.10
 - Improved message at end on where to locate your volume to access your data.
