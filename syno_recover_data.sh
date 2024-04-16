@@ -42,7 +42,7 @@
 mount_path="/home/ubuntu"
 
 
-scriptver="v1.0.12"
+scriptver="v1.1.12"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -226,8 +226,12 @@ if [[ ${#device_paths[@]} -gt "1" ]]; then
             echo "Invalid choice!"
         fi
     done
-else
+elif [[ ${#device_paths[@]} -eq "1" ]]; then
     device_path="${device_paths[0]}"
+else
+    ding
+    echo -e "\n${Error}ERROR${Off} No volumes found!"
+    exit 1  # No volumes found
 fi
 
 get_mount_dir(){ 
@@ -249,9 +253,9 @@ get_mount_dir "$device_path"
 
 
 # Check if volume is already mounted
-if findmount "${mount_path}/$mount_dir" >/dev/null; then
+if findmnt "${mount_path}/$mount_dir" >/dev/null; then
     echo -e "\n$device_path already mounted to ${mount_path}/$mount_dir"
-    findmount "${mount_path}/$mount_dir"  # debug
+    findmnt "${mount_path}/$mount_dir"  # debug
     echo -e "\nYou can recover your data from:"
     echo -e "- Files > Home > ${Cyan}${mount_dir}${Off}"
     echo -e "- Files > ${Cyan}${mount_dir}${Off}"
