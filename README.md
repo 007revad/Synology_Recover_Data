@@ -72,7 +72,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 ### Extra steps if the volume is encrypted
 
 After booting into Ubuntu:
-1. Plug in the USB drive containing the *.rkey file or files, or browse to the network share where the location of your *.rkey file or files.
+1. Plug in the USB drive containing the *.rkey file or files, or browse to the network share where your *.rkey file or files are located.
 3. Copy the *.rkey file or files to Home.
 
 ### Setup in Ubuntu
