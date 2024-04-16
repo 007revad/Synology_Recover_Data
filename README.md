@@ -15,10 +15,11 @@ A script to make it easy to recover your data from your Synology's drives using 
 <details>
   <summary>Click here to see list</summary>
 
-| Drives from  | DSM version              | Storage Pool type | RAID type | Notes           |
-| ------------ |--------------------------|-------------------|-----------|-----------------|
-| DS720+       | DSM 7.2.1-69057 Update 4 | Multiple Volume   | SHR       | Single drive    |
-| DS1812+      | DSM 6.2.4-25556 Update 7 | Multiple Volume   | SHR       | Single drive    |
+| Drive source | DSM version    | Btrfs/Ext | Storage Pool type | RAID  | Notes           |
+|--------------|----------------|-----------|-------------------|-------|-----------------|
+| DS720+       | 7.2.1 Update 4 | Btrfs     | Multiple Volume   | SHR   | Single drive    |
+| DS1812+      | 6.2.4 Update 7 | Btrfs     | Multiple Volume   | SHR   | Single drive    |
+| DS1812+      | 6.2.4 Update 7 | Btrfs     | Single Volume     | Basic | **Failed, faulty HDD** |
 
 </details>
 
