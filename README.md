@@ -9,6 +9,8 @@
 
 A script to make it easy to recover your data from your Synology's drives using a computer.
 
+Now supports encrypted volumes.
+
 
 ### Confirmed working on
 
@@ -37,13 +39,13 @@ The same environment rules as on Synology's web page apply:
 **Applicable to:**
 - DSM version 6.2.x and above
 - Volumes using the Btrfs or ext4 file systems
-- Ubuntu 19.10 (Synology's recommended 18.04 has a bug with persistent partition)
+- Encrypted volumes using the Btrfs or ext4 file systems
+- Ubuntu 19.10 only (Synology's recommended 18.04 has a bug with persistent partition)
 
 **Not applicable to:**
 - Volumes using read-write SSD cache
 
 **Currently the script does NOT support:**
-- Encrypted volumes
 - Encrypted shared folders
 
 At the moment the script only supports mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
@@ -60,21 +62,18 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 6. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
     <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
-7. If the drives contain encrytped volume, or volumes, see **Extra steps if the volume is encrypted** below before doing the following steps.
+7. If the drives contain an encrytped volume, or volumes:
+    - Find your [NASNAME]_volume#.rkey for each encrypted volume. e.g. MYNAS_volume1.rkey, DISKSTATION_volume1.rkey or RACKSTATION_volume1.rkey etc.
+    - Copy the *.rkey file or files to a USB drive or network share.
 8. Once Rufus has finished creating the boot drive you can reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
     - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubuntu on them.
 9. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
 
 ### Extra steps if the volume is encrypted
 
-If the computer you are going to use is where you saved the encrypted volume recovery key when you created the encrypted volume:
-1. Find your [NASNAME]_volume1.rkey ( DISKSTATION_volume1.rkey or RACKSTATION_volume1.rkey etc ).
-2. Copy the *.rkey file to a USB drive or network share.
-
 After booting into Ubuntu:
-1. Plug in the USB drive containing the *.rkey file, or browse to the network share where the *.rkey file is located.
-2. Copy the *.rkey file to Home.
-3. Remember the name of the *.rkey file.
+1. Plug in the USB drive containing the *.rkey file or files, or browse to the network share where the location of your *.rkey file or files.
+3. Copy the *.rkey file or files to Home.
 
 ### Setup in Ubuntu
 
