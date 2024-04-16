@@ -41,8 +41,10 @@
 #mount_path="/media"
 mount_path="/home/ubuntu"
 
+home_path="/home/ubuntu"  # Location of .rkey files for decrypting volumes
 
-scriptver="v1.1.12"
+
+scriptver="v1.1.13"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -273,7 +275,7 @@ fi
 get_rkeys(){ 
     # [NASNAME]_volume1.rkey
     rkeys=( )
-    for rkey in /home/ubuntu/*_volume"${device_path##*_}".rkey; do
+    for rkey in "${home_path}"/*_volume"${device_path##*_}".rkey; do
         #echo "$rkey"  # debug
         if [[ -f "$rkey" ]]; then
             rkeys+=("$rkey")
@@ -288,7 +290,7 @@ select_rkey(){
         select recovery_key in "${rkeys[@]}"; do
             if [[ $recovery_key ]]; then
                 if [[ -f $recovery_key ]]; then
-                    echo "You selected $recovery_key"
+                    echo -e "You selected $recovery_key"
                     break
                 else
                     ding
@@ -301,7 +303,7 @@ select_rkey(){
         done
     elif [[ ${#rkeys[@]} -eq 1 ]]; then
         recovery_key=${rkeys[0]}
-        echo "Using recovery key: $recovery_key"
+        echo -e "Using recovery key: $recovery_key"
     else
         ding
         echo -e "Line ${LINENO}: ${Error}ERROR${Off} No recovery key found!"
@@ -335,12 +337,18 @@ if [[ $maybe_encripted == "yes" ]]; then
 
         # Decrypt the encrypted volume
         cryptvol="cryptvol_${device_path##*_}"
-        #echo "cryptovol: $device_path"  # debug
+        #echo "cryptvol: $device_path"  # debug
+
+        # Remove any existing /dev/mapper/cryptvol_${device_path##*_}
+        if [[ -e "/dev/mapper/$cryptvol" ]]; then
+            umount -f "/dev/mapper/$cryptvol"
+            dmsetup remove -f "/dev/mapper/$cryptvol"
+        fi
 
         # cryptsetup open --allow-discards /dev/vgX/volume_Y cryptvol_Y -S 1 -d ${base64_decode_output_path}
         cryptsetup open --allow-discards "$device_path" "$cryptvol" -S 1 -d "${base64_decode_output_path}"
         code="$?"
-        if [[ $code -gt "0" ]]; then exit 1; fi
+        #if [[ $code -gt "0" ]]; then exit 1; fi
 
         # Set device_path
         device_path="/dev/mapper/$cryptvol"
@@ -354,7 +362,8 @@ fi
 echo -e "\nCreating mount point folder(s)"
 if [[ ! -d "${mount_path}/$mount_dir" ]]; then
     #mkdir -m777 "${mount_path}/$mount_dir"
-    mkdir -m444 "${mount_path}/$mount_dir"
+    #mkdir -m444 "${mount_path}/$mount_dir"
+    mkdir -m744 "${mount_path}/$mount_dir"
 
     # Allow user to unmount volume from UI
     chown ubuntu "${mount_path}/$mount_dir"
