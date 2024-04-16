@@ -251,7 +251,6 @@ get_mount_dir(){
 
 get_mount_dir "$device_path"
 
-
 # Check if volume is already mounted
 if findmnt "${mount_path}/$mount_dir" >/dev/null; then
     echo -e "\n$device_path already mounted to ${mount_path}/$mount_dir"
@@ -310,12 +309,11 @@ select_rkey(){
     fi
 }
 
-
 # Encrypted volume
 if [[ $maybe_encripted == "yes" ]]; then
     echo -e "\nType ${Cyan}yes${Off} if $mount_dir is an encrypted volume"
     read -r answer
-    if [[ ${answer,,} != "yes" ]]; then
+    if [[ ${answer,,} == "yes" ]]; then
         # Get recovery key
         get_rkeys
         select_rkey
@@ -323,25 +321,30 @@ if [[ $maybe_encripted == "yes" ]]; then
         # Install cryptsetup if missing
         install_executable cryptsetup
 
-        # Create base64_decode_output_path (whatever that is!?!?)
-        base64_decode_output_path="/tmp/$mount_dir"
-        mkdir -m644 "$base64_decode_output_path"
-
-        # Decode recovery key
+        # Decode recovery key to file
+        base64_decode_output_path="${recovery_key%.*}"
         base64 --decode "${recovery_key}" > "${base64_decode_output_path}"
+        code="$?"
+        if [[ $code -gt "0" ]]; then exit 1; fi
 
         # Test recovery key
         # cryptsetup open --test-passphrase /dev/vgX/volume_Y -S 1 -d ${base64_decode_output_path}
         cryptsetup open --test-passphrase "$device_path" -S 1 -d "${base64_decode_output_path}"
+        code="$?"
+        if [[ $code -gt "0" ]]; then exit 1; fi
 
         # Decrypt the encrypted volume
         cryptvol="cryptvol_${device_path##*_}"
+        #echo "cryptovol: $device_path"  # debug
 
         # cryptsetup open --allow-discards /dev/vgX/volume_Y cryptvol_Y -S 1 -d ${base64_decode_output_path}
         cryptsetup open --allow-discards "$device_path" "$cryptvol" -S 1 -d "${base64_decode_output_path}"
+        code="$?"
+        if [[ $code -gt "0" ]]; then exit 1; fi
 
         # Set device_path
         device_path="/dev/mapper/$cryptvol"
+        #echo "device_path: $device_path"  # debug
     fi
 fi
 
