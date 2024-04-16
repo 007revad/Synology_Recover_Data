@@ -42,7 +42,7 @@
 mount_path="/home/ubuntu"
 
 
-scriptver="v1.0.11"
+scriptver="v1.1.12"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -119,6 +119,7 @@ install_executable(){
     fi
 }
 
+# Install curl if missing
 install_executable curl
 
 #------------------------------------------------------------------------------
@@ -141,21 +142,6 @@ if ! printf "%s\n%s\n" "$tag" "$scriptver" |
 fi
 
 #------------------------------------------------------------------------------
-
-# # Check there are RAID arrays that need assembling
-# readarray -t array < <(cat /proc/mdstat | grep md | cut -d" " -f1)
-# for d in "${array[@]}"; do
-#    personality=$(cat /proc/mdstat | grep ^"$d" | awk '{print $4}')
-#    if [[ $personality =~ raid ]] && [[ $personality != "raid1" ]]; then
-#        devices+=("/dev/$d")
-#    fi
-# done
-# if [[ ${#devices[@]} -lt "1" ]]; then
-#    echo "No RAID arrays found that need mounting!"
-#    exit 1  # No arrays to assemble
-# #else
-# #    echo "${#devices[@]} suitable RAID arrays found."
-# fi
 
 # Install mdadm, lvm2 and btrfs-progs if missing
 install_executable mdadm
@@ -240,14 +226,22 @@ if [[ ${#device_paths[@]} -gt "1" ]]; then
             echo "Invalid choice!"
         fi
     done
-else
+elif [[ ${#device_paths[@]} -eq "1" ]]; then
     device_path="${device_paths[0]}"
+else
+    ding
+    echo -e "\n${Error}ERROR${Off} No volumes found!"
+    exit 1  # No volumes found
 fi
 
 get_mount_dir(){ 
     case "${1,,}" in
-        /dev/md*|/dev/vg*/volume_*)
+        /dev/md*)
             mount_dir="$(basename -- "$1")"
+            ;;
+        /dev/vg*/volume_*)
+            mount_dir="$(basename -- "$1")"
+            maybe_encripted="yes"
             ;;
         /dev/vg*/lv)
             mount_dir="$(echo "$1" | cut -d"/" -f3)"
@@ -257,12 +251,101 @@ get_mount_dir(){
 
 get_mount_dir "$device_path"
 
+# Check if volume is already mounted
+if findmnt "${mount_path}/$mount_dir" >/dev/null; then
+    echo -e "\n$device_path already mounted to ${mount_path}/$mount_dir"
+    findmnt "${mount_path}/$mount_dir"  # debug
+    echo -e "\nYou can recover your data from:"
+    echo -e "- Files > Home > ${Cyan}${mount_dir}${Off}"
+    echo -e "- Files > ${Cyan}${mount_dir}${Off}"
+    echo -e "- ${Cyan}${mount_path}/${mount_dir}${Off} via Terminal\n"
+    exit
+fi
+
 # Check user is ready
 echo -e "\nType ${Cyan}yes${Off} if you are ready to mount $device_path"
 echo "to ${mount_path}/$mount_dir"
 read -r answer
 if [[ ${answer,,} != "yes" ]]; then
     exit
+fi
+
+get_rkeys(){ 
+    # [NASNAME]_volume1.rkey
+    rkeys=( )
+    for rkey in /home/ubuntu/*_volume"${device_path##*_}".rkey; do
+        #echo "$rkey"  # debug
+        if [[ -f "$rkey" ]]; then
+            rkeys+=("$rkey")
+        fi
+    done
+}
+
+select_rkey(){ 
+    echo ""
+    if [[ ${#rkeys[@]} -gt 1 ]]; then
+        PS3="Select the correct recovery key: "
+        select recovery_key in "${rkeys[@]}"; do
+            if [[ $recovery_key ]]; then
+                if [[ -f $recovery_key ]]; then
+                    echo "You selected $recovery_key"
+                    break
+                else
+                    ding
+                    echo -e "Line ${LINENO}: ${Error}ERROR${Off} $recovery_key not found!"
+                    exit 1  # Selected recovery key not found
+                fi
+            else
+                echo "Invalid choice!"
+            fi
+        done
+    elif [[ ${#rkeys[@]} -eq 1 ]]; then
+        recovery_key=${rkeys[0]}
+        echo "Using recovery key: $recovery_key"
+    else
+        ding
+        echo -e "Line ${LINENO}: ${Error}ERROR${Off} No recovery key found!"
+        exit 1  # No recovery key found
+    fi
+}
+
+# Encrypted volume
+if [[ $maybe_encripted == "yes" ]]; then
+    echo -e "\nType ${Cyan}yes${Off} if $mount_dir is an encrypted volume"
+    read -r answer
+    if [[ ${answer,,} == "yes" ]]; then
+        # Get recovery key
+        get_rkeys
+        select_rkey
+
+        # Install cryptsetup if missing
+        install_executable cryptsetup
+
+        # Decode recovery key to file
+        base64_decode_output_path="${recovery_key%.*}"
+        base64 --decode "${recovery_key}" > "${base64_decode_output_path}"
+        code="$?"
+        if [[ $code -gt "0" ]]; then exit 1; fi
+
+        # Test recovery key
+        # cryptsetup open --test-passphrase /dev/vgX/volume_Y -S 1 -d ${base64_decode_output_path}
+        cryptsetup open --test-passphrase "$device_path" -S 1 -d "${base64_decode_output_path}"
+        code="$?"
+        if [[ $code -gt "0" ]]; then exit 1; fi
+
+        # Decrypt the encrypted volume
+        cryptvol="cryptvol_${device_path##*_}"
+        #echo "cryptovol: $device_path"  # debug
+
+        # cryptsetup open --allow-discards /dev/vgX/volume_Y cryptvol_Y -S 1 -d ${base64_decode_output_path}
+        cryptsetup open --allow-discards "$device_path" "$cryptvol" -S 1 -d "${base64_decode_output_path}"
+        code="$?"
+        if [[ $code -gt "0" ]]; then exit 1; fi
+
+        # Set device_path
+        device_path="/dev/mapper/$cryptvol"
+        #echo "device_path: $device_path"  # debug
+    fi
 fi
 
 
@@ -283,7 +366,7 @@ fi
 echo -e "\nMounting volume(s)"
 mount "${device_path}" "${mount_path}/${mount_dir}" -o ro
 code="$1"
-
+#
 # mount has the following return codes (the bits can be ORed):
 # 0 success
 # 1 incorrect invocation or permissions
@@ -302,8 +385,8 @@ else
     # Successful mount has null exit code
     echo -e "\nThe volume is now mounted as ${Cyan}read only.${Off}\n"
     echo -e "You can now recover your data from:"
-    echo -e "- ${Cyan}Files > Home > ${mount_dir}${Off}"
-    echo -e "- ${Cyan}Files > ${mount_dir}${Off}"
+    echo -e "- Files > Home > ${Cyan}${mount_dir}${Off}"
+    echo -e "- Files > ${Cyan}${mount_dir}${Off}"
     echo -e "- ${Cyan}${mount_path}/${mount_dir}${Off} via Terminal\n"
 fi
 

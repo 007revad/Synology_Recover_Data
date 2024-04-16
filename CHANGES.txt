@@ -1,3 +1,8 @@
+v1.1.12
+- Added support for encrypted volumes.
+- Added check if volume is already mounted.
+- Bug fix for when no volumes are found (if drives aren't plugged in or powered on).
+
 v1.0.11
 - Bug fix for "Operation not permitted" when trying to unmount volume from GUI.
 - Bug fix for "Failed to mount volume" error when mount succeeded.

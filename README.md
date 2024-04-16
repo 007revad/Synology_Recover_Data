@@ -9,17 +9,20 @@
 
 A script to make it easy to recover your data from your Synology's drives using a computer.
 
+Now supports encrypted volumes.
+
 
 ### Confirmed working on
 
 <details>
   <summary>Click here to see list</summary>
 
-| Drive source | DSM version    | Btrfs/Ext | Storage Pool type | RAID  | Notes           |
-|--------------|----------------|-----------|-------------------|-------|-----------------|
-| DS720+       | 7.2.1 Update 4 | Btrfs     | Multiple Volume   | SHR   | Single drive    |
-| DS1812+      | 6.2.4 Update 7 | Btrfs     | Multiple Volume   | SHR   | Single drive    |
-| DS1812+      | 6.2.4 Update 7 | Btrfs     | Single Volume     | Basic | **Failed, faulty HDD** |
+| Drive source | DSM version    | Btrfs/Ext | Storage Pool type | RAID  | Encrypted | Notes           |
+|--------------|----------------|-----------|-------------------|-------|-----------|-----------------|
+| DS720+       | 7.2.1 Update 4 | Btrfs     | Multiple Volume   | SHR   | Volume    | Single drive    |
+| DS720+       | 7.2.1 Update 4 | Btrfs     | Multiple Volume   | SHR   | no        | Single drive    |
+| DS1812+      | 6.2.4 Update 7 | Btrfs     | Multiple Volume   | SHR   | no        | Single drive    |
+| DS1812+      | 6.2.4 Update 7 | Btrfs     | Single Volume     | Basic | no        | **Failed, faulty HDD** |
 
 </details>
 
@@ -36,13 +39,13 @@ The same environment rules as on Synology's web page apply:
 **Applicable to:**
 - DSM version 6.2.x and above
 - Volumes using the Btrfs or ext4 file systems
-- Ubuntu 19.10 (Synology's recommended 18.04 has a bug with persistent partition)
+- Encrypted volumes using the Btrfs or ext4 file systems
+- Ubuntu 19.10 only (Synology's recommended 18.04 has a bug with persistent partition)
 
 **Not applicable to:**
 - Volumes using read-write SSD cache
 
 **Currently the script does NOT support:**
-- Encrypted volumes
 - Encrypted shared folders
 
 At the moment the script only supports mounting 1 volume at a time. You'd need to run the script again to mount a 2nd volume.
@@ -59,10 +62,18 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 6. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
     <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
-7. Once Rufus has finished creating the boot drive you can reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
+7. If the drives contain an encrytped volume, or volumes:
+    - Find your [NASNAME]_volume#.rkey for each encrypted volume. e.g. MYNAS_volume1.rkey, DISKSTATION_volume1.rkey or RACKSTATION_volume1.rkey etc.
+    - Copy the *.rkey file or files to a USB drive or network share.
+8. Once Rufus has finished creating the boot drive you can reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
     - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubuntu on them.
-8. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
+9. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
 
+### Extra steps if the volume is encrypted
+
+After booting into Ubuntu:
+1. Plug in the USB drive containing the *.rkey file or files, or browse to the network share where your *.rkey file or files are located.
+3. Copy the *.rkey file or files to Home.
 
 ### Setup in Ubuntu
 
