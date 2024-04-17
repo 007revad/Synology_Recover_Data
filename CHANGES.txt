@@ -1,6 +1,6 @@
 v1.1.13
 - Changed the location of .rkey files for decrypting volumes from hard coded to a variable.
-- Minor bug fix to avoid possible cryptvol already exists message.
+- Minor bug fix to avoid possible cryptvol already exists message causing script to exit.
 
 v1.1.12
 - Added support for encrypted volumes.
