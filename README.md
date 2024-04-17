@@ -127,3 +127,8 @@ There are 2 ways you can access you data:
 <p align="left">DSM 6 Classic RAID single volume</p>
 <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-md-2.png"></p>
 
+<br>
+
+<p align="left">DSM 7 Encrypted volume</p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-encrypted-volume-2.png"></p>
+
