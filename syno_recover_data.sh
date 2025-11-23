@@ -44,7 +44,7 @@ mount_path="/home/ubuntu"
 home_path="/home/ubuntu"  # Location of .rkey files for decrypting volumes
 
 
-scriptver="v1.1.13"
+scriptver="v1.1.14"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -106,7 +106,8 @@ sed -i "s|security.ubuntu|old-releases.ubuntu|" /etc/apt/sources.list
 install_executable(){ 
     # $1 is mdadm, lvm2 or btrfs-progs
     #if ! apt list --installed | grep -q "^${1}/"; then  # Don't use apt in script
-    if ! apt-cache show "$1" >/dev/null; then
+    #if ! apt-cache show "$1" >/dev/null; then
+    if ! which "$1" >/dev/null; then
         echo -e "\nInstalling $1"
         if [[ $aptget_updated != "yes" ]]; then
             apt-get update
