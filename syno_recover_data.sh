@@ -44,7 +44,7 @@ mount_path="/home/ubuntu"
 home_path="/home/ubuntu"  # Location of .rkey files for decrypting volumes
 
 
-scriptver="v1.1.14"
+scriptver="v1.2.15"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -164,7 +164,9 @@ if which mdadm >/dev/null; then
 #        ding
 #        echo -e "${Error}ERROR${Off} Assembling drives failed!"
 #        exit 1
-    mdadm -AsfR  # Ignore "no arrays found" because it could be a single drive
+    #mdadm -AsfR  # Ignore "no arrays found" because it could be a single drive
+    # Use DSM superblock version is 0.90
+    mdadm -AsfR --metadata=0.90  # Ignore "no arrays found" because it could be a single drive
     vgchange -ay
 #    fi
 else
