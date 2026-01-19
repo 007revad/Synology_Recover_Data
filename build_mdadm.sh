@@ -131,6 +131,9 @@ main() {
     
     print_system_info
     
+    # Install prerequisites
+    apt-get install build-essential wget
+    
     # Check prerequisites
     if ! check_prerequisites; then
         exit 1
