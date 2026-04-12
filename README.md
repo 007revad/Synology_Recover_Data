@@ -1,6 +1,7 @@
 # Synology Recover Data
 
 <a href="https://github.com/007revad/Synology_Recover_Data/releases"><img src="https://img.shields.io/github/release/007revad/Synology_Recover_Data.svg"></a>
+[![Github Releases](https://img.shields.io/github/downloads/007revad/Synology_Recover_Data/total.svg)](https://github.com/007revad/Synology_Recover_Data/releases)
 ![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgithub.com%2F007revad%2FSynology_Recover_Data&label=Visitors&icon=github&color=%23198754&message=&style=flat&tz=Australia%2FSydney)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/paypalme/007revad)
 [![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/007revad)
