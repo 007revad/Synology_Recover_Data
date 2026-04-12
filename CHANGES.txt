@@ -1,3 +1,9 @@
+v2.0.15
+- Updated to download the required mdadm verion's source and compile it.
+- Added warning if recovery key test failed.
+- Changed to use wget to avoid installing curl.
+- Bug fix for unmounting volume from GUI.
+
 v1.1.14
 - Bug fix for not installing curl or mdadm.
 

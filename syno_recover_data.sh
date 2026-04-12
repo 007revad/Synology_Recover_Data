@@ -16,6 +16,11 @@
 #
 # https://xpenology.com/forum/topic/54545-dsm-7-and-storage-poolarray-functionality/
 #
+# https://askubuntu.com/questions/517136/list-of-ubuntu-versions-with-corresponding-linux-kernel-version
+#
+#---------------------------------------------------------------------------------------
+# https://isc.sans.edu/diary/rss/30904
+# mdadm --assemble --readonly --scan --force --run
 #---------------------------------------------------------------------------------------
 # Ubuntu 20.04.6 LTS and 22.04.4 LTS issues:
 #
@@ -35,6 +40,7 @@
 # https://community.synology.com/enu/forum/1/post/155289
 #
 # Installing curl fails with 'apt-get install curl' so had to use 'apt install curl'
+#
 #---------------------------------------------------------------------------------------
 
 #mount_path="/mnt"
@@ -43,14 +49,23 @@ mount_path="/home/ubuntu"
 
 home_path="/home/ubuntu"  # Location of .rkey files for decrypting volumes
 
+# Set up paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MDADM_BINARY="${SCRIPT_DIR}/mdadm-3.4"
 
-scriptver="v1.1.14"
+scriptver="v2.0.15"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
 # Show script version
 #echo -e "$script $scriptver\ngithub.com/$repo\n"
 echo "$script $scriptver"
+
+# Linux distributor and version
+lsb_release -ds
+
+linux_version=$(lsb_release -rs)
+linux_distro=$(lsb_release -is)
 
 # Shell Colors
 #Black='\e[0;30m'   # ${Black}
@@ -100,30 +115,46 @@ while [[ ! -d $mount_path ]]; do
 done
 
 # Set Ubuntu to get older version of mdadm that works with DSM's superblock location
-sed -i "s|archive.ubuntu|old-releases.ubuntu|" /etc/apt/sources.list
-sed -i "s|security.ubuntu|old-releases.ubuntu|" /etc/apt/sources.list
+#sed -i "s|archive.ubuntu|old-releases.ubuntu|" /etc/apt/sources.list
+##sed -i "s|security.ubuntu|old-releases.ubuntu|" /etc/apt/sources.list
+##sed -i "s|old-releases.ubuntu|security.ubuntu|" /etc/apt/sources.list
 
 install_executable(){ 
     # $1 is mdadm, lvm2 or btrfs-progs
-    #if ! apt list --installed | grep -q "^${1}/"; then  # Don't use apt in script
-    #if ! apt-cache show "$1" >/dev/null; then
-    if ! which "$1" >/dev/null; then
-        echo -e "\nInstalling $1"
-        if [[ $aptget_updated != "yes" ]]; then
-            apt-get update
-            aptget_updated="yes"
+    code=""
+    if [[ $aptget_updated != "yes" ]]; then
+        apt-get update > /dev/null 2>&1
+        aptget_updated="yes"
+    fi
+    if [[ $1 == "lvm2" ]] && [[ $linux_version == "18.04" ]]; then
+        # Ubuntu 18.04 needs the full lvm2 installed
+        apt-get install -y "lvm2" 1>/dev/null
+        code="$?"
+    else
+        #if ! apt list --installed | grep -q "^${1}/"; then  # Don't use apt in script
+        #if ! apt-cache show "$1" >/dev/null; then
+        # https://stackoverflow.com/questions/1298066/how-can-i-check-if-a-package-is-installed-and-install-it-if-not
+        if ! dpkg-query -s "$1" >/dev/null; then
+            echo -e "\n${Cyan}Installing $1${Off}"
+#            if [[ $1 == "mdadm" ]]; then
+#                # apt-get won't install mdadm in Ubuntu 19.10
+#                apt install -y mdadm 1>/dev/null
+#                code="$?"
+#            else
+                apt-get install -y "$1" 1>/dev/null
+                code="$?"
+#            fi
         fi
-        if [[ $1 == "mdadm" ]]; then
-            # apt-get won't install mdadm in Ubuntu 19.10
-            apt install -y mdadm
-        else
-            apt-get install -y "$1"
-        fi
+    fi
+    if [[ $code -gt "0" ]]; then
+        ding
+        echo -e "${Error}Error $code${Off} Failed to install $1"
     fi
 }
 
 # Install curl if missing
-install_executable curl
+# Changed to use wget instead to avoid installing curl
+#install_executable curl
 
 #------------------------------------------------------------------------------
 # Check latest release with GitHub API
@@ -131,7 +162,11 @@ install_executable curl
 # Get latest release info
 # Curl timeout options:
 # https://unix.stackexchange.com/questions/94604/does-curl-have-a-timeout
-release=$(curl --silent -m 10 --connect-timeout 5 \
+#release=$(curl --silent -m 10 --connect-timeout 5 \
+#    "https://api.github.com/repos/$repo/releases/latest")
+
+# Use wget to avoid installing curl in Ubuntu
+release=$(wget -qO- -q --connect-timeout=5 \
     "https://api.github.com/repos/$repo/releases/latest")
 
 # Release version
@@ -147,12 +182,70 @@ fi
 #------------------------------------------------------------------------------
 
 # Install mdadm, lvm2 and btrfs-progs if missing
-install_executable mdadm
-install_executable lvm2
-install_executable btrfs-progs
+#install_executable mdadm
+#install_executable lvm2
+#install_executable btrfs-progs
+
+# Compile mdadm-3.4 from source if binary is missing
+if [[ ! -x "$MDADM_BINARY" ]]; then
+    echo -e "\n${Cyan}Compiling mdadm 3.4 from source...${Off}"
+    mdadm_log="${SCRIPT_DIR}/mdadm_compile.log"
+    mdadm_src="${SCRIPT_DIR}/mdadm-3.4"
+
+    # Install build dependencies
+    apt-get install -y build-essential > "$mdadm_log" 2>&1
+
+    # Download source
+    echo "Downloading mdadm 3.4 source..." | tee -a "$mdadm_log"
+    wget -q --connect-timeout=10 \
+        "https://mirrors.edge.kernel.org/pub/linux/utils/raid/mdadm/mdadm-3.4.tar.gz" \
+        -O "${SCRIPT_DIR}/mdadm-3.4.tar.gz" >> "$mdadm_log" 2>&1
+
+    if [[ ! -f "${SCRIPT_DIR}/mdadm-3.4.tar.gz" ]]; then
+        ding
+        echo -e "${Error}ERROR${Off} Failed to download mdadm source!"
+        exit 1
+    fi
+
+    # Extract
+    echo "Extracting..." | tee -a "$mdadm_log"
+    tar xzf "${SCRIPT_DIR}/mdadm-3.4.tar.gz" -C "$SCRIPT_DIR" >> "$mdadm_log" 2>&1
+
+    # Patch and compile
+    echo "Compiling..." | tee -a "$mdadm_log"
+    for f in "${mdadm_src}"/*.c; do
+        sed -i '1s/^/#include <sys\/sysmacros.h>\n/' "$f"
+    done
+    make -C "$mdadm_src" \
+        LDFLAGS="-static" \
+        CFLAGS="-Wall -Wstrict-prototypes -ggdb -DNO_COROSYNC -DNO_DLM -D_GNU_SOURCE" \
+        >> "$mdadm_log" 2>&1
+    code="$?"
+
+    if [[ $code -gt "0" ]] || [[ ! -x "$MDADM_BINARY" ]]; then
+        ding
+        echo -e "${Error}ERROR${Off} Failed to compile mdadm! See $mdadm_log"
+        exit 1
+    fi
+
+    echo -e "${Cyan}mdadm compiled successfully.${Off}"
+
+    # Cleanup source files to save space
+    rm -f "${SCRIPT_DIR}/mdadm-3.4.tar.gz"
+    # Save the binary, then remove entire source dir and restore binary
+    mv "${mdadm_src}/mdadm" "${SCRIPT_DIR}/mdadm-3.4-static"
+    rm -rf "${mdadm_src}"
+    mv "${SCRIPT_DIR}/mdadm-3.4-static" "${SCRIPT_DIR}/mdadm-3.4"
+
+    chown ubuntu "${SCRIPT_DIR}/mdadm-3.4"
+    chown ubuntu "${mdadm_log}"
+fi
 
 # Assemble all the drives removed from the Synology NAS
-if which mdadm >/dev/null; then
+#if which mdadm >/dev/null; then
+#if which "$MDADM_BINARY" >/dev/null; then
+if [[ -x "$MDADM_BINARY" ]]; then
+    echo -e "\n$("$MDADM_BINARY" --version 2>&1)"
     echo -e "\nAssembling your Synology drives"
     # mdadm options:
     # -A --assemble  Assemble a previously created array.
@@ -164,7 +257,8 @@ if which mdadm >/dev/null; then
 #        ding
 #        echo -e "${Error}ERROR${Off} Assembling drives failed!"
 #        exit 1
-    mdadm -AsfR  # Ignore "no arrays found" because it could be a single drive
+    #mdadm -AsfR  # Ignore "no arrays found" because it could be a single drive
+    "$MDADM_BINARY" -AsfR  # Ignore "no arrays found" because it could be a single drive
     vgchange -ay
 #    fi
 else
@@ -172,6 +266,16 @@ else
     echo -e "${Error}ERROR${Off} mdadm not installed!"
     exit 1
 fi
+
+
+echo -e "\nlvs"                                   # debug
+lvs | grep 'volume_'                              # debug
+echo ""                                           # debug
+echo -e "cat /proc/mdstat"                        # debug
+#cat /proc/mdstat | grep '^md' | awk '{print $1}'  # debug
+cat /proc/mdstat                                  # debug
+echo ""                                           # debug
+
 
 # Get device path(s)
 if lvs | grep 'volume_' >/dev/null; then
@@ -328,13 +432,21 @@ if [[ $maybe_encripted == "yes" ]]; then
         base64_decode_output_path="${recovery_key%.*}"
         base64 --decode "${recovery_key}" > "${base64_decode_output_path}"
         code="$?"
-        if [[ $code -gt "0" ]]; then exit 1; fi
+        if [[ $code -gt "0" ]]; then
+            ding
+            echo -e "Line ${LINENO}: ${Error}ERROR $code${Off} Decoding recovery key failed!"
+            exit 1
+        fi
 
         # Test recovery key
         # cryptsetup open --test-passphrase /dev/vgX/volume_Y -S 1 -d ${base64_decode_output_path}
         cryptsetup open --test-passphrase "$device_path" -S 1 -d "${base64_decode_output_path}"
         code="$?"
-        if [[ $code -gt "0" ]]; then exit 1; fi
+        if [[ $code -gt "0" ]]; then
+            ding
+            echo -e "Line ${LINENO}: ${Error}ERROR $code${Off} Testing recovery key failed!"
+            exit 1
+        fi
 
         # Decrypt the encrypted volume
         cryptvol="cryptvol_${device_path##*_}"
@@ -374,8 +486,8 @@ fi
 # NEED TO MOUNT EACH DEVICE PATH IN ARRAY IF ALL SELECTED
 # Mount the volume as read only
 echo -e "\nMounting volume(s)"
-mount "${device_path}" "${mount_path}/${mount_dir}" -o ro
-code="$1"
+mount "${device_path}" "${mount_path}/${mount_dir}" -o ro,users
+code="$?"
 #
 # mount has the following return codes (the bits can be ORed):
 # 0 success
