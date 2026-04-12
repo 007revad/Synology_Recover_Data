@@ -46,7 +46,7 @@ The same environment rules as on Synology's web page apply:
 
 > **NOTE** <br>
 > Ubuntu 18.04 no longer works. Ubuntu deleted it's package archive. <br>
-> Ubuntu 20 and 22 do NOT work. Their newer kernel version does support DSM's superblock location. <br>
+> Ubuntu 20 and 22 do NOT work. Their newer kernel version does NOT support DSM's superblock location. <br>
 
 **Not applicable to:**
 - Volumes using read-write SSD cache
