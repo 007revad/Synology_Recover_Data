@@ -43,6 +43,10 @@ The same environment rules as on Synology's web page apply:
 - Encrypted volumes using the Btrfs or ext4 file systems
 - Ubuntu 19.10 (Eoan Ermine) only (Synology's recommended 18.04 has a bug with persistent partition)
 
+> **NOTE** <br>
+> Ubuntu 18.04 no longer works. Ubuntu deleted it's package archive. <br>
+> Ubuntu 20 and 22 do NOT work. Their newer kernel version does support DSM's superblock location. <br>
+
 **Not applicable to:**
 - Volumes using read-write SSD cache
 
@@ -133,4 +137,9 @@ There are 2 ways you can access you data:
 
 <p align="left">DSM 7 Encrypted volume</p>
 <p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/image-encrypted-volume-2.png"></p>
+
+<br>
+
+<p align="left">v2.0.15 compiling compatbile mdadm version from source</p>
+<p align="left"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <img src="/images/v2.0.15.png"></p>
 
