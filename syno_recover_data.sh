@@ -52,8 +52,9 @@ home_path="/home/ubuntu"  # Location of .rkey files for decrypting volumes
 # Set up paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MDADM_BINARY="${SCRIPT_DIR}/mdadm-3.4"
+CRYPTSETUP_BINARY="${SCRIPT_DIR}/cryptsetup-static"
 
-scriptver="v2.0.15"
+scriptver="v2.0.16"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -66,6 +67,11 @@ lsb_release -ds
 
 linux_version=$(lsb_release -rs)
 linux_distro=$(lsb_release -is)
+
+# Detect host architecture for lib paths and .deb downloads
+host_arch=$(dpkg --print-architecture)              # e.g. amd64, arm64
+#lib_arch=$(dpkg-architecture -qDEB_HOST_MULTIARCH)  # e.g. x86_64-linux-gnu, aarch64-linux-gnu
+lib_arch=$(dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null || gcc -print-multiarch 2>/dev/null || echo "x86_64-linux-gnu")
 
 # Shell Colors
 #Black='\e[0;30m'   # ${Black}
@@ -193,15 +199,16 @@ if [[ ! -x "$MDADM_BINARY" ]]; then
     mdadm_src="${SCRIPT_DIR}/mdadm-3.4"
 
     # Install build dependencies
-    apt-get install -y build-essential > "$mdadm_log" 2>&1
+    # apt-get no longer works in Ubuntu 19.10 (apt repo no longer exists)
+    #apt-get install -y build-essential > "$mdadm_log" 2>&1
 
     # Download source
-    echo "Downloading mdadm 3.4 source..." | tee -a "$mdadm_log"
+    echo "Downloading mdadm 3.4 source..." | tee "$mdadm_log"
     wget -q --connect-timeout=10 \
         "https://mirrors.edge.kernel.org/pub/linux/utils/raid/mdadm/mdadm-3.4.tar.gz" \
         -O "${SCRIPT_DIR}/mdadm-3.4.tar.gz" >> "$mdadm_log" 2>&1
 
-    if [[ ! -f "${SCRIPT_DIR}/mdadm-3.4.tar.gz" ]]; then
+    if [[ ! -s "${SCRIPT_DIR}/mdadm-3.4.tar.gz" ]]; then
         ding
         echo -e "${Error}ERROR${Off} Failed to download mdadm source!"
         exit 1
@@ -210,6 +217,7 @@ if [[ ! -x "$MDADM_BINARY" ]]; then
     # Extract
     echo "Extracting..." | tee -a "$mdadm_log"
     tar xzf "${SCRIPT_DIR}/mdadm-3.4.tar.gz" -C "$SCRIPT_DIR" >> "$mdadm_log" 2>&1
+    chown -R ubuntu:ubuntu "${mdadm_src}"
 
     # Patch and compile
     echo "Compiling..." | tee -a "$mdadm_log"
@@ -241,6 +249,170 @@ if [[ ! -x "$MDADM_BINARY" ]]; then
     chown ubuntu "${mdadm_log}"
 fi
 
+# Compile libdevmapper.a from lvm2 source if missing (needed for cryptsetup static build)
+if [[ ! -s "/usr/lib/${lib_arch}/libdevmapper.a" ]]; then
+    echo -e "\n${Cyan}Compiling libdevmapper.a from lvm2 source...${Off}"
+    lvm2_log="${SCRIPT_DIR}/lvm2_compile.log"
+    lvm2_src="${SCRIPT_DIR}/LVM2.2.03.02"
+
+    # Download source
+    echo "Downloading lvm2 2.03.02 source..." | tee "$lvm2_log"
+    wget -q --connect-timeout=10 \
+        "https://sourceware.org/pub/lvm2/LVM2.2.03.02.tgz" \
+        -O "${SCRIPT_DIR}/LVM2.2.03.02.tgz" >> "$lvm2_log" 2>&1
+
+    if [[ ! -s "${SCRIPT_DIR}/LVM2.2.03.02.tgz" ]]; then
+        ding
+        echo -e "${Error}ERROR${Off} Failed to download lvm2 source!"
+        exit 1
+    fi
+
+    # Extract
+    echo "Extracting..." | tee -a "$lvm2_log"
+    tar xzf "${SCRIPT_DIR}/LVM2.2.03.02.tgz" -C "$SCRIPT_DIR" >> "$lvm2_log" 2>&1
+    chown -R ubuntu:ubuntu "${lvm2_src}"
+
+    echo "Patching libaio.h..." | tee -a "$lvm2_log"
+    mkdir -p /usr/local/include
+    echo '#ifndef LIBAIO_H' > /usr/local/include/libaio.h
+    echo '#define LIBAIO_H' >> /usr/local/include/libaio.h
+    echo '#endif' >> /usr/local/include/libaio.h
+
+    # Configure and build just device-mapper
+    echo "Configuring..." | tee -a "$lvm2_log"
+    (cd "$lvm2_src" && ./configure \
+        --enable-static_link \
+        --disable-selinux \
+        --disable-udev-systemd-background-jobs \
+        --with-cache=none \
+        --with-mirrors=none \
+        --with-snapshots=none \
+        --disable-readline \
+        --disable-libaio \
+        >> "$lvm2_log" 2>&1)
+    code="$?"
+
+    if [[ $code -gt "0" ]]; then
+        ding
+        echo -e "${Error}ERROR${Off} Failed to configure lvm2! See $lvm2_log"
+        exit 1
+    fi
+
+    echo "Compiling libdevmapper.a..." | tee -a "$lvm2_log"
+    make -C "$lvm2_src" device-mapper >> "$lvm2_log" 2>&1
+    code="$?"
+
+    if [[ ! -s "${lvm2_src}/libdm/ioctl/libdevmapper.a" ]]; then
+        ding
+        echo -e "${Error}ERROR${Off} Failed to compile libdevmapper.a! See $lvm2_log"
+        exit 1
+    fi
+
+    # Install static lib so cryptsetup configure and linker can find it
+    cp "${lvm2_src}/libdm/ioctl/libdevmapper.a" "/usr/lib/${lib_arch}/"
+    echo -e "${Cyan}libdevmapper.a compiled successfully.${Off}"
+
+    # Cleanup
+    rm -f "${SCRIPT_DIR}/LVM2.2.03.02.tgz"
+    rm -rf "${lvm2_src}"
+
+    chown ubuntu "$lvm2_log"
+fi
+
+# Compile cryptsetup 2.4.3 from source if binary is missing
+if [[ ! -x "$CRYPTSETUP_BINARY" ]]; then
+    echo -e "\n${Cyan}Compiling cryptsetup 2.4.3 from source...${Off}"
+    cryptsetup_log="${SCRIPT_DIR}/cryptsetup_compile.log"
+    cryptsetup_src="${SCRIPT_DIR}/cryptsetup-2.4.3"
+
+    # Install build dependencies from old-releases (apt-get no longer works on Ubuntu 19.10)
+    echo "Installing build dependencies..." | tee "$cryptsetup_log"
+    old_releases="http://old-releases.ubuntu.com/ubuntu/pool"
+    deps=(
+            "main/l/lvm2/libdevmapper-dev_1.02.155-2ubuntu6_${host_arch}.deb"
+            "main/p/popt/libpopt-dev_1.16-12_${host_arch}.deb"
+            "main/o/openssl/libssl-dev_1.1.1c-1ubuntu4_${host_arch}.deb"
+            "main/u/util-linux/uuid-dev_2.34-0.1ubuntu2_${host_arch}.deb"
+            "main/j/json-c/libjson-c-dev_0.13.1+dfsg-4ubuntu0.3_${host_arch}.deb"
+            "main/u/util-linux/libblkid-dev_2.34-0.1ubuntu2_${host_arch}.deb"
+            "main/s/systemd/libudev-dev_242-7ubuntu3_${host_arch}.deb"
+            "main/libs/libselinux/libselinux1-dev_2.9-2_${host_arch}.deb"
+            "main/libs/libsepol/libsepol1-dev_2.9-2_${host_arch}.deb"
+        )
+    for dep in "${deps[@]}"; do
+        deb="${SCRIPT_DIR}/$(basename "$dep")"
+        if ! dpkg-query -s "$(basename "$dep" | cut -d_ -f1)" >/dev/null 2>&1; then
+            wget -q --connect-timeout=10 "${old_releases}/${dep}" -O "$deb" >> "$cryptsetup_log" 2>&1
+            if [[ ! -s "$deb" ]]; then
+                ding
+                echo -e "${Error}ERROR${Off} Failed to download $(basename "$dep")!"
+                exit 1
+            fi
+            dpkg -i --force-depends "$deb" >> "$cryptsetup_log" 2>&1
+            rm -f "$deb"
+        fi
+    done
+
+    # Download source
+    echo "Downloading cryptsetup 2.4.3 source..." | tee -a "$cryptsetup_log"
+    wget -q --connect-timeout=10 \
+        "https://cdn.kernel.org/pub/linux/utils/cryptsetup/v2.4/cryptsetup-2.4.3.tar.gz" \
+        -O "${SCRIPT_DIR}/cryptsetup-2.4.3.tar.gz" >> "$cryptsetup_log" 2>&1
+
+    if [[ ! -s "${SCRIPT_DIR}/cryptsetup-2.4.3.tar.gz" ]]; then
+        ding
+        echo -e "${Error}ERROR${Off} Failed to download cryptsetup source!"
+        exit 1
+    fi
+
+    # Extract
+    echo "Extracting..." | tee -a "$cryptsetup_log"
+    tar xzf "${SCRIPT_DIR}/cryptsetup-2.4.3.tar.gz" -C "$SCRIPT_DIR" >> "$cryptsetup_log" 2>&1
+    chown -R ubuntu:ubuntu "${cryptsetup_src}"
+
+    # Configure and compile
+    echo "Configuring..." | tee -a "$cryptsetup_log"
+    (cd "$cryptsetup_src" && ./configure \
+        --enable-static-cryptsetup \
+        --disable-shared \
+        --disable-ssh-token \
+        >> "$cryptsetup_log" 2>&1)
+    code="$?"
+    if [[ $code -gt "0" ]]; then
+        ding
+        echo -e "${Error}ERROR${Off} Failed to configure cryptsetup! See $cryptsetup_log"
+        exit 1
+    fi
+
+    # Patch Makefile to allow dynamic libudev and end with -Bdynamic for gcc libs
+    sed -i 's/cryptsetup_static_LDFLAGS = $(AM_LDFLAGS) -all-static/cryptsetup_static_LDFLAGS = $(AM_LDFLAGS) -Wl,-Bdynamic,-ludev,-Bstatic,-Bdynamic/' \
+        "${cryptsetup_src}/Makefile"
+    sed -i 's/-ldevmapper -lm -ludev/-ldevmapper -lm/' \
+        "${cryptsetup_src}/Makefile"
+    # Prevent make from regenerating Makefile from config.status
+    touch "${cryptsetup_src}/config.status"
+    touch "${cryptsetup_src}/Makefile"
+
+    echo "Compiling..." | tee -a "$cryptsetup_log"
+    (cd "$cryptsetup_src" && make cryptsetup.static >> "$cryptsetup_log" 2>&1)
+    code="$?"
+    if [[ $code -gt "0" ]] || [[ ! -x "${cryptsetup_src}/cryptsetup.static" ]]; then
+        ding
+        echo -e "${Error}ERROR${Off} Failed to compile cryptsetup! See $cryptsetup_log"
+        exit 1
+    fi
+
+    echo -e "${Cyan}cryptsetup compiled successfully.${Off}"
+
+    # Cleanup source files to save space
+    rm -f "${SCRIPT_DIR}/cryptsetup-2.4.3.tar.gz"
+    mv "${cryptsetup_src}/cryptsetup.static" "${SCRIPT_DIR}/cryptsetup-static"
+    rm -rf "${cryptsetup_src}"
+
+    chown ubuntu "${SCRIPT_DIR}/cryptsetup-static"
+    chown ubuntu "$cryptsetup_log"
+fi
+
 # Assemble all the drives removed from the Synology NAS
 #if which mdadm >/dev/null; then
 #if which "$MDADM_BINARY" >/dev/null; then
@@ -261,6 +433,19 @@ if [[ -x "$MDADM_BINARY" ]]; then
     "$MDADM_BINARY" -AsfR  # Ignore "no arrays found" because it could be a single drive
     vgchange -ay
 #    fi
+
+    # Get member drives and disable their standby timers
+    mapfile -t member_drives < <("$MDADM_BINARY" --detail --scan 2>/dev/null | \
+        awk '{print $2}' | \
+        xargs -I{} "$MDADM_BINARY" --detail {} 2>/dev/null | \
+        awk '/\/dev\/sd/ {print $NF}' | sort -u)
+
+    if [[ ${#member_drives[@]} -gt 0 ]]; then
+        echo -e "\nDisabling standby timers on source drives"
+        for dev in "${member_drives[@]}"; do
+            hdparm -S 0 "$dev" 2>/dev/null && echo "  $dev: standby disabled"
+        done
+    fi
 else
     ding
     echo -e "${Error}ERROR${Off} mdadm not installed!"
@@ -426,7 +611,7 @@ if [[ $maybe_encripted == "yes" ]]; then
         select_rkey
 
         # Install cryptsetup if missing
-        install_executable cryptsetup
+        #install_executable cryptsetup
 
         # Decode recovery key to file
         base64_decode_output_path="${recovery_key%.*}"
@@ -440,7 +625,8 @@ if [[ $maybe_encripted == "yes" ]]; then
 
         # Test recovery key
         # cryptsetup open --test-passphrase /dev/vgX/volume_Y -S 1 -d ${base64_decode_output_path}
-        cryptsetup open --test-passphrase "$device_path" -S 1 -d "${base64_decode_output_path}"
+        #cryptsetup open --test-passphrase "$device_path" -S 1 -d "${base64_decode_output_path}"
+        "$CRYPTSETUP_BINARY" open --test-passphrase "$device_path" -S 1 -d "${base64_decode_output_path}"
         code="$?"
         if [[ $code -gt "0" ]]; then
             ding
@@ -459,7 +645,8 @@ if [[ $maybe_encripted == "yes" ]]; then
         fi
 
         # cryptsetup open --allow-discards /dev/vgX/volume_Y cryptvol_Y -S 1 -d ${base64_decode_output_path}
-        cryptsetup open --allow-discards "$device_path" "$cryptvol" -S 1 -d "${base64_decode_output_path}"
+        #cryptsetup open --allow-discards "$device_path" "$cryptvol" -S 1 -d "${base64_decode_output_path}"
+        "$CRYPTSETUP_BINARY" open --allow-discards "$device_path" "$cryptvol" -S 1 -d "${base64_decode_output_path}"
         code="$?"
         #if [[ $code -gt "0" ]]; then exit 1; fi
 

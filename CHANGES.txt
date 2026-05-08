@@ -1,5 +1,10 @@
+v2.0.16
+- Now works on Computers with ARM64 (aarch64) CPUs as well as AMD64 (x86_64).
+- Updated to download the required lvm2 and crytpsetup versions' source and compile them.
+- Changed to prevent USB drives from sleeping.
+
 v2.0.15
-- Updated to download the required mdadm verion's source and compile it.
+- Updated to download the required mdadm version's source and compile it.
 - Added warning if recovery key test failed.
 - Changed to use wget to avoid installing curl.
 - Bug fix for unmounting volume from GUI.
