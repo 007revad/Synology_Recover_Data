@@ -1,4 +1,4 @@
-name: Build n Release Synology Recover Data
+name: Build n Release Zip
 
 on:
   release:
@@ -10,6 +10,9 @@ jobs:
     name: Build zip
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,20 +23,23 @@ jobs:
           if [ "${{ github.event_name }}" = "release" ]; then
             echo "tag=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
           else
-            tag=$(curl -s https://api.github.com/repos/007revad/Synology_Recover_Data/releases/latest \
+            tag=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest \
               | jq -r .tag_name)
             echo "tag=$tag" >> $GITHUB_OUTPUT
           fi
 
       - name: Create zip
+        id: create_zip
         run: |
-          zip Synology_Recover_Data.zip syno_recover_data.sh
+          zip_name="${{ github.event.repository.name }}_script_${{ steps.get_tag.outputs.tag }}.zip"
+          echo "name=$zip_name" >> $GITHUB_OUTPUT
+          zip "$zip_name" syno_recover_data.sh
 
       - name: Upload zip to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_tag.outputs.tag }}
-          files: Synology_Recover_Data.zip
+          files: ${{ steps.create_zip.outputs.name }}
           make_latest: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
