@@ -170,8 +170,8 @@ check_kernel_version(){
         echo -e "\n${Error}ERROR${Off} arm64 is not supported by this script."
         echo "This script requires kernel 4.15.0-108-generic which is not available for arm64."
         echo ""
-        echo "See the README for instructions on setting up your Ubuntu USB drive:"
-        echo "https://github.com/007revad/Synology_Recover_Data#readme"
+        echo "See step 7 in the instructions on setting up your Ubuntu USB drive:"
+        echo "https://github.com/007revad/Synology_Recover_Data#setup-to-recover-data-using-a-pc"
         echo ""
         exit 1
     fi
@@ -181,8 +181,8 @@ check_kernel_version(){
         echo -e "\n${Error}ERROR${Off} Kernel $kernel is not compatible with Synology btrfs volumes."
         echo "Kernel 4.15.0-108-generic is required."
         echo ""
-        echo "See the README for instructions on setting up your Ubuntu USB drive:"
-        echo "https://github.com/007revad/Synology_Recover_Data#readme"
+        echo "See step 7 in the instructions on setting up your Ubuntu USB drive:"
+        echo "https://github.com/007revad/Synology_Recover_Data#setup-to-recover-data-using-a-pc"
         echo ""
         exit 1
     fi
