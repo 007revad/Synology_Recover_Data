@@ -76,7 +76,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
     - Copy the *.rkey file or files to a USB drive or network share.
 7. Once Rufus has finished creating the boot drive you need to run the PowerShell script. 
     - Kernel 4.15.0-108 is required to mount Synology btrfs volumes, and the **patch_ubuntu_usb.ps1** script adds it to your Ubuntu 19.10 USB drive.
-    - Download the latest [Synology_Recover_Data.zip](https://github.com/007revad/Synology_Recover_Data/releases).
+    - Download the latest [Synology_Recover_Data_script zip file](https://github.com/007revad/Synology_Recover_Data/releases).
     - Right-click the downloaded Synology_Recover_Data.zip, select Properties, check Unblock, click OK, then extract.
     - Right-click on **patch_ubuntu_usb.ps1** and select **Run with PowerShell**, or run from a PowerShell window with .\patch_ubuntu_usb.ps1.
     - Enter your USB drive's drive letter when asked.
