@@ -94,7 +94,7 @@ After booting into Ubuntu:
 ### Setup in Ubuntu - only needed for v2.0.16 and older
 
 <details>
-  <summary>Click here to see list</summary>
+  <summary>Click here to see steps</summary>
 
 1. Open Firefox from the tool bar and go to [https://github.com/007revad/Synology_Recover_Data](https://github.com/007revad/Synology_Recover_Data) or https://tinyurl.com/synorecover and download the latest release's [zip file](https://github.com/007revad/Synology_Recover_Data/releases).
     - Or download the latest script directly  https://github.com/007revad/Synology_Recover_Data/releases/latest/download/Synology_Recover_Data.zip 
