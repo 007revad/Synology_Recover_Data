@@ -1,3 +1,9 @@
+v2.0.17
+- Only works on computers with AMD64 (x86_64) CPUs.
+  - The required older kernel is not available for ARM64 (aarch64).
+- Bug fix for RAID 5, 6, 10 and SHR with more than 2 drives.
+  - Now includes a Synology btrfs compatible kernel (4.15.0-108).
+
 v2.0.16
 - Now works on computers with ARM64 (aarch64) CPUs as well as AMD64 (x86_64).
 - Updated to download the required lvm2 and crytpsetup versions' source and compile them.

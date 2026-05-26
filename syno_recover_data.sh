@@ -54,7 +54,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MDADM_BINARY="${SCRIPT_DIR}/mdadm-3.4"
 CRYPTSETUP_BINARY="${SCRIPT_DIR}/cryptsetup-static"
 
-scriptver="v2.0.16"
+scriptver="v2.0.17"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -157,6 +157,39 @@ install_executable(){
         echo -e "${Error}Error $code${Off} Failed to install $1"
     fi
 }
+
+# Check if kernel is compatible with Synology btrfs volumes
+# Kernel 4.15.0-109+ includes a backported commit that blocks mounting
+# Synology btrfs volumes. Only linux-image-4.15.0-108-generic is known to work.
+check_kernel_version(){
+    local kernel
+    kernel=$(uname -r)
+
+    if [[ $host_arch == "arm64" ]]; then
+        ding
+        echo -e "\n${Error}ERROR${Off} arm64 is not supported by this script."
+        echo "This script requires kernel 4.15.0-108-generic which is not available for arm64."
+        echo ""
+        echo "See the README for instructions on setting up your Ubuntu USB drive:"
+        echo "https://github.com/007revad/Synology_Recover_Data#readme"
+        echo ""
+        exit 1
+    fi
+
+    if [[ $kernel != "4.15.0-108-generic" ]]; then
+        ding
+        echo -e "\n${Error}ERROR${Off} Kernel $kernel is not compatible with Synology btrfs volumes."
+        echo "Kernel 4.15.0-108-generic is required."
+        echo ""
+        echo "See the README for instructions on setting up your Ubuntu USB drive:"
+        echo "https://github.com/007revad/Synology_Recover_Data#readme"
+        echo ""
+        exit 1
+    fi
+}
+
+# Check kernel is compatible with Synology btrfs volumes
+check_kernel_version
 
 # Install curl if missing
 # Changed to use wget instead to avoid installing curl

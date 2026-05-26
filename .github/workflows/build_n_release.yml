@@ -33,7 +33,7 @@ jobs:
         run: |
           zip_name="${{ github.event.repository.name }}_script_${{ steps.get_tag.outputs.tag }}.zip"
           echo "name=$zip_name" >> $GITHUB_OUTPUT
-          zip "$zip_name" syno_recover_data.sh
+          zip "$zip_name" syno_recover_data.sh patch_ubuntu_usb.ps1 -j resources/vmlinuz-4.15.0-108-generic
 
       - name: Upload zip to release
         uses: softprops/action-gh-release@v2

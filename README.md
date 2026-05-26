@@ -43,6 +43,7 @@ The same environment rules as on Synology's web page apply:
 - Volumes using the Btrfs or ext4 file systems
 - Encrypted volumes using the Btrfs or ext4 file systems
 - Ubuntu 19.10 (Eoan Ermine) only (Synology's recommended 18.04 has a bug with persistent partition)
+    - Kernel 4.15.0-108 is required to mount Synology btrfs volumes, and the patch_ubuntu_usb.ps1 script adds it to your Ubuntu 19.10 USB drive.
 
 > **NOTE** <br>
 > Ubuntu 18.04 no longer works. Ubuntu deleted it's package archive. <br>
@@ -63,17 +64,25 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 2. Remove the drives from your Synology NAS and install them in your PC or USB dock. For RAID or SHR configurations, you must install all the drives (excluding hot spare drives) in your PC at the same time.
 3. Download the **Desktop image** for [Ubuntu version 19.10 Eoan Ermine](https://old-releases.ubuntu.com/releases/19.10/)
    - Synology's recommended 18.04 has a bug with persistent partition so any changes you make in Ubuntu will be lost when you shut down Ubuntu.
-   - Newer Ubuntu versions like 20.04.6 LTS and 22.04.4 LTS require an 8GB USB drive and install an mdadm version and have a kernel that won't work with DSM's superblock location.
-5. You'll need a 4GB or larger USB drive.
-6. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 1 exception:
+   - Newer Ubuntu versions like 20.04.6 LTS and 22.04.4 LTS require an 8GB USB drive and install an mdadm version that won't work with Synology's superblock location and a kernel that prevents mounting Synology's btrfs volumes.
+   - Kernel 4.15.0-108 is required for mounting btrfs volumes. See step 7, below.
+4. You'll need a 4GB or larger USB drive.
+5. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 2 exceptions:
+    - Select your downloaded Ubuntu 19.10 iso file.
     - Set Persistent partition size in [Rufus](https://rufus.ie/en/) to greater than 0 so any changes you make in Ubuntu are saved to the USB drive.
     <p align="left"> &nbsp; &nbsp;<img src="/images/rufus.png"></p>
-7. If the drives contain an encrytped volume, or volumes:
+6. If the drives contain an encrypted volume, or volumes:
     - Find your [NASNAME]_volume#.rkey for each encrypted volume. e.g. MYNAS_volume1.rkey, DISKSTATION_volume1.rkey or RACKSTATION_volume1.rkey etc.
     - Copy the *.rkey file or files to a USB drive or network share.
-8. Once Rufus has finished creating the boot drive you can reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
-    - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentially install Ubuntu on them.
-9. **IMPORTANT!** When Ubuntu asks if you want to want to "Try Ubuntu" or "Install Ubuntu" select "**Try Ubuntu**".
+7. Once Rufus has finished creating the boot drive you need to run the PowerShell script. 
+    - Kernel 4.15.0-108 is required to mount Synology btrfs volumes, and the **patch_ubuntu_usb.ps1** script adds it to your Ubuntu 19.10 USB drive.
+    - Download the latest [Synology_Recover_Data.zip](https://github.com/007revad/Synology_Recover_Data/releases).
+    - Right-click the downloaded Synology_Recover_Data.zip, select Properties, check Unblock, click OK, then extract.
+    - Right-click on **patch_ubuntu_usb.ps1** and select **Run with PowerShell**, or run from a PowerShell window with .\patch_ubuntu_usb.ps1.
+    - Enter your USB drive's drive letter when asked.
+8. You can now reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
+    - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentally install Ubuntu on them.
+9. **IMPORTANT!** When you see the GRUB boot menu select "**Try Ubuntu (kernel 4.15.0-108)**".
 
 ### Extra steps if the volume is encrypted
 
