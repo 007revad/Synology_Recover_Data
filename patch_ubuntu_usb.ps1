@@ -24,13 +24,22 @@ Write-Host "Synology Recover Data - Ubuntu USB kernel patch" -ForegroundColor Cy
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Find vmlinuz in the same directory as this script
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$kernelSrc = Join-Path $ScriptDir $KernelFile
+# Find files in the same directory as this script
+$ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
+$kernelSrc  = Join-Path $ScriptDir $KernelFile
+$recoverSrc = Join-Path $ScriptDir "syno_recover_data.sh"
 
 if (-not (Test-Path $kernelSrc)) {
     Write-Host "ERROR: $KernelFile not found in script directory." -ForegroundColor Red
     Write-Host "Make sure $KernelFile is in the same folder as this script." -ForegroundColor Red
+    Write-Host ""
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+
+if (-not (Test-Path $recoverSrc)) {
+    Write-Host "ERROR: syno_recover_data.sh not found in script directory." -ForegroundColor Red
+    Write-Host "Make sure syno_recover_data.sh is in the same folder as this script." -ForegroundColor Red
     Write-Host ""
     Read-Host "Press Enter to exit"
     exit 1
@@ -41,7 +50,7 @@ Write-Host "Removable drives currently available:" -ForegroundColor Cyan
 $removableDrives = Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DriveType -eq 2 }
 if ($removableDrives) {
     foreach ($drive in $removableDrives) {
-        $size = [math]::Round($drive.Size / 1GB, 0)
+        $size  = [math]::Round($drive.Size / 1GB, 0)
         $label = if ($drive.VolumeName) { $drive.VolumeName } else { "No label" }
         Write-Host "  $($drive.DeviceID) - $label ($size GB)" -ForegroundColor White
     }
@@ -52,8 +61,8 @@ Write-Host ""
 
 # Prompt for drive letter
 Write-Host "Enter the drive letter of your Ubuntu 19.10 USB drive (e.g. G): " -ForegroundColor Cyan -NoNewline
-$letter = Read-Host
-$letter = $letter.Trim().TrimEnd(':').ToUpper()
+$letter   = Read-Host
+$letter   = $letter.Trim().TrimEnd(':').ToUpper()
 $UsbDrive = "${letter}:"
 
 Write-Host ""
@@ -120,6 +129,20 @@ if ($fileSize -lt 1MB) {
 }
 Write-Host "Copied $KernelFile successfully ($([math]::Round($fileSize / 1MB, 1)) MB)." -ForegroundColor Green
 
+# Copy syno_recover_data.sh to USB drive root
+$recoverDest = "$UsbDrive\syno_recover_data.sh"
+Write-Host "Copying syno_recover_data.sh to USB drive..." -ForegroundColor Cyan
+try {
+    Copy-Item $recoverSrc $recoverDest -Force
+} catch {
+    Write-Host "ERROR: Failed to copy syno_recover_data.sh to USB drive." -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor Red
+    Write-Host ""
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+Write-Host "Copied syno_recover_data.sh successfully." -ForegroundColor Green
+
 # Patch grub.cfg - insert new menu entry after "set timeout=X" line
 Write-Host "Patching grub.cfg..." -ForegroundColor Cyan
 $newContent = $grubContent -replace "(set timeout=\d+\r?\n)", "`$1$NewMenuEntry"
@@ -143,6 +166,6 @@ Write-Host "  1. Safely eject the USB drive" -ForegroundColor White
 Write-Host "  2. Connect your Synology drives to your PC" -ForegroundColor White
 Write-Host "  3. Boot from the USB drive" -ForegroundColor White
 Write-Host "  4. Select 'Try Ubuntu (kernel 4.15.0-108)' from the boot menu" -ForegroundColor White
-Write-Host "  5. Run the syno_recover_data.sh script" -ForegroundColor White
+Write-Host "  5. Open a terminal and run: sudo bash /cdrom/syno_recover_data.sh" -ForegroundColor White
 Write-Host ""
 Read-Host "Press Enter to exit"

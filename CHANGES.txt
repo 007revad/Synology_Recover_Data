@@ -1,3 +1,10 @@
+v2.0.18
+- Updated so powershell script also installs syno_recover_data.sh on USB boot drive for you.
+- Only works on computers with AMD64 (x86_64) CPUs.
+  - The required older kernel is not available for ARM64 (aarch64).
+- Bug fix for RAID 5, 6, 10 and SHR with more than 2 drives.
+  - Now includes a Synology btrfs compatible kernel (4.15.0-108).
+
 v2.0.17
 - Only works on computers with AMD64 (x86_64) CPUs.
   - The required older kernel is not available for ARM64 (aarch64).

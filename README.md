@@ -80,6 +80,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
     - Right-click the downloaded Synology_Recover_Data.zip, select Properties, check Unblock, click OK, then extract.
     - Right-click on **patch_ubuntu_usb.ps1** and select **Run with PowerShell**, or run from a PowerShell window with .\patch_ubuntu_usb.ps1.
     - Enter your USB drive's drive letter when asked.
+    <p align="left"> &nbsp; &nbsp;<img src="/images/powershell.png"></p>
 8. You can now reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
     - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentally install Ubuntu on them.
 9. **IMPORTANT!** When you see the GRUB boot menu select "**Try Ubuntu (kernel 4.15.0-108)**".
@@ -90,7 +91,10 @@ After booting into Ubuntu:
 1. Plug in the USB drive containing the *.rkey file or files, or browse to the network share where your *.rkey file or files are located.
 3. Copy the *.rkey file or files to Home.
 
-### Setup in Ubuntu
+### Setup in Ubuntu - only needed for v2.0.16 and older
+
+<details>
+  <summary>Click here to see list</summary>
 
 1. Open Firefox from the tool bar and go to [https://github.com/007revad/Synology_Recover_Data](https://github.com/007revad/Synology_Recover_Data) or https://tinyurl.com/synorecover and download the latest release's [zip file](https://github.com/007revad/Synology_Recover_Data/releases).
     - Or download the latest script directly  https://github.com/007revad/Synology_Recover_Data/releases/latest/download/Synology_Recover_Data.zip 
@@ -106,13 +110,18 @@ After booting into Ubuntu:
 7. Right-click on Terminal and click on Save to favorites.
 8. Press Esc twice to return to the desktop.
 
+</details>
+
 
 ### Running the script
 
 1. Open Terminal from the tool bar.
-2. Type `sudo -i /home/ubuntu/syno_recover_data.sh` and press enter.
-    <p align="left"> &nbsp; <img src="/images/run-script.png"></p>
+2. Type `sudo bash /cdrom/syno_recover_data.sh` and press enter.
+    <p align="left"> &nbsp; <img src="/images/run-script-new.png"></p>
 
+**Note:** For v2.0.16 and older:
+Type `sudo -i /home/syno_recover_data.sh` and press enter.
+ 
 
 ### Accessing your data
 

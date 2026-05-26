@@ -54,7 +54,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MDADM_BINARY="${SCRIPT_DIR}/mdadm-3.4"
 CRYPTSETUP_BINARY="${SCRIPT_DIR}/cryptsetup-static"
 
-scriptver="v2.0.17"
+scriptver="v2.0.18"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
