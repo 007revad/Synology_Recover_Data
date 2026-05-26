@@ -1,5 +1,5 @@
 v2.0.18
-- Updated so powershell script also installs syno_recover_data.sh on USB boot drive for you.
+- Updated so PowerShell script also installs syno_recover_data.sh on the USB boot drive for you.
 - Only works on computers with AMD64 (x86_64) CPUs.
   - The required older kernel is not available for ARM64 (aarch64).
 - Bug fix for RAID 5, 6, 10 and SHR with more than 2 drives.
