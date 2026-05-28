@@ -7,7 +7,7 @@
 # Script verified at https://www.shellcheck.net/
 #
 # Run in Ubuntu terminal:
-# sudo -i /home/ubuntu/syno_recover_data.sh
+# sudo bash /cdrom/syno_recover_data.sh
 #
 #---------------------------------------------------------------------------------------
 # Resources used to develop this script:
@@ -51,10 +51,12 @@ home_path="/home/ubuntu"  # Location of .rkey files for decrypting volumes
 
 # Set up paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MDADM_BINARY="${SCRIPT_DIR}/mdadm-3.4"
-CRYPTSETUP_BINARY="${SCRIPT_DIR}/cryptsetup-static"
+HOME_DIR="/home/ubuntu"  # Location for log files and compiled binaries
+MDADM_BINARY="${HOME_DIR}/mdadm-3.4"
+BTRFS_MODULE="${SCRIPT_DIR}/btrfs.ko"
+CRYPTSETUP_BINARY="${HOME_DIR}/cryptsetup-static"
 
-scriptver="v2.0.18"
+scriptver="v2.0.19"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -158,39 +160,6 @@ install_executable(){
     fi
 }
 
-# Check if kernel is compatible with Synology btrfs volumes
-# Kernel 4.15.0-109+ includes a backported commit that blocks mounting
-# Synology btrfs volumes. Only linux-image-4.15.0-108-generic is known to work.
-check_kernel_version(){
-    local kernel
-    kernel=$(uname -r)
-
-    if [[ $host_arch == "arm64" ]]; then
-        ding
-        echo -e "\n${Error}ERROR${Off} arm64 is not supported by this script."
-        echo "This script requires kernel 4.15.0-108-generic which is not available for arm64."
-        echo ""
-        echo "See step 7 in the instructions on setting up your Ubuntu USB drive:"
-        echo "https://github.com/007revad/Synology_Recover_Data#setup-to-recover-data-using-a-pc"
-        echo ""
-        exit 1
-    fi
-
-    if [[ $kernel != "4.15.0-108-generic" ]]; then
-        ding
-        echo -e "\n${Error}ERROR${Off} Kernel $kernel is not compatible with Synology btrfs volumes."
-        echo "Kernel 4.15.0-108-generic is required."
-        echo ""
-        echo "See step 7 in the instructions on setting up your Ubuntu USB drive:"
-        echo "https://github.com/007revad/Synology_Recover_Data#setup-to-recover-data-using-a-pc"
-        echo ""
-        exit 1
-    fi
-}
-
-# Check kernel is compatible with Synology btrfs volumes
-check_kernel_version
-
 # Install curl if missing
 # Changed to use wget instead to avoid installing curl
 #install_executable curl
@@ -228,8 +197,8 @@ fi
 # Compile mdadm-3.4 from source if binary is missing
 if [[ ! -x "$MDADM_BINARY" ]]; then
     echo -e "\n${Cyan}Compiling mdadm 3.4 from source...${Off}"
-    mdadm_log="${SCRIPT_DIR}/mdadm_compile.log"
-    mdadm_src="${SCRIPT_DIR}/mdadm-3.4"
+    mdadm_log="${HOME_DIR}/mdadm_compile.log"
+    mdadm_src="${HOME_DIR}/mdadm-3.4"
 
     # Install build dependencies
     # apt-get no longer works in Ubuntu 19.10 (apt repo no longer exists)
@@ -239,9 +208,9 @@ if [[ ! -x "$MDADM_BINARY" ]]; then
     echo "Downloading mdadm 3.4 source..." | tee "$mdadm_log"
     wget -q --connect-timeout=10 \
         "https://mirrors.edge.kernel.org/pub/linux/utils/raid/mdadm/mdadm-3.4.tar.gz" \
-        -O "${SCRIPT_DIR}/mdadm-3.4.tar.gz" >> "$mdadm_log" 2>&1
+        -O "${HOME_DIR}/mdadm-3.4.tar.gz" >> "$mdadm_log" 2>&1
 
-    if [[ ! -s "${SCRIPT_DIR}/mdadm-3.4.tar.gz" ]]; then
+    if [[ ! -s "${HOME_DIR}/mdadm-3.4.tar.gz" ]]; then
         ding
         echo -e "${Error}ERROR${Off} Failed to download mdadm source!"
         exit 1
@@ -249,7 +218,7 @@ if [[ ! -x "$MDADM_BINARY" ]]; then
 
     # Extract
     echo "Extracting..." | tee -a "$mdadm_log"
-    tar xzf "${SCRIPT_DIR}/mdadm-3.4.tar.gz" -C "$SCRIPT_DIR" >> "$mdadm_log" 2>&1
+    tar xzf "${HOME_DIR}/mdadm-3.4.tar.gz" -C "$HOME_DIR" >> "$mdadm_log" 2>&1
     chown -R ubuntu:ubuntu "${mdadm_src}"
 
     # Patch and compile
@@ -272,29 +241,29 @@ if [[ ! -x "$MDADM_BINARY" ]]; then
     echo -e "${Cyan}mdadm compiled successfully.${Off}"
 
     # Cleanup source files to save space
-    rm -f "${SCRIPT_DIR}/mdadm-3.4.tar.gz"
+    rm -f "${HOME_DIR}/mdadm-3.4.tar.gz"
     # Save the binary, then remove entire source dir and restore binary
-    mv "${mdadm_src}/mdadm" "${SCRIPT_DIR}/mdadm-3.4-static"
+    mv "${mdadm_src}/mdadm" "${HOME_DIR}/mdadm-3.4-static"
     rm -rf "${mdadm_src}"
-    mv "${SCRIPT_DIR}/mdadm-3.4-static" "${SCRIPT_DIR}/mdadm-3.4"
+    mv "${HOME_DIR}/mdadm-3.4-static" "${HOME_DIR}/mdadm-3.4"
 
-    chown ubuntu "${SCRIPT_DIR}/mdadm-3.4"
+    chown ubuntu "${HOME_DIR}/mdadm-3.4"
     chown ubuntu "${mdadm_log}"
 fi
 
 # Compile libdevmapper.a from lvm2 source if missing (needed for cryptsetup static build)
 if [[ ! -s "/usr/lib/${lib_arch}/libdevmapper.a" ]]; then
     echo -e "\n${Cyan}Compiling libdevmapper.a from lvm2 source...${Off}"
-    lvm2_log="${SCRIPT_DIR}/lvm2_compile.log"
-    lvm2_src="${SCRIPT_DIR}/LVM2.2.03.02"
+    lvm2_log="${HOME_DIR}/lvm2_compile.log"
+    lvm2_src="${HOME_DIR}/LVM2.2.03.02"
 
     # Download source
     echo "Downloading lvm2 2.03.02 source..." | tee "$lvm2_log"
     wget -q --connect-timeout=10 \
         "https://sourceware.org/pub/lvm2/LVM2.2.03.02.tgz" \
-        -O "${SCRIPT_DIR}/LVM2.2.03.02.tgz" >> "$lvm2_log" 2>&1
+        -O "${HOME_DIR}/LVM2.2.03.02.tgz" >> "$lvm2_log" 2>&1
 
-    if [[ ! -s "${SCRIPT_DIR}/LVM2.2.03.02.tgz" ]]; then
+    if [[ ! -s "${HOME_DIR}/LVM2.2.03.02.tgz" ]]; then
         ding
         echo -e "${Error}ERROR${Off} Failed to download lvm2 source!"
         exit 1
@@ -302,7 +271,7 @@ if [[ ! -s "/usr/lib/${lib_arch}/libdevmapper.a" ]]; then
 
     # Extract
     echo "Extracting..." | tee -a "$lvm2_log"
-    tar xzf "${SCRIPT_DIR}/LVM2.2.03.02.tgz" -C "$SCRIPT_DIR" >> "$lvm2_log" 2>&1
+    tar xzf "${HOME_DIR}/LVM2.2.03.02.tgz" -C "$HOME_DIR" >> "$lvm2_log" 2>&1
     chown -R ubuntu:ubuntu "${lvm2_src}"
 
     echo "Patching libaio.h..." | tee -a "$lvm2_log"
@@ -346,7 +315,7 @@ if [[ ! -s "/usr/lib/${lib_arch}/libdevmapper.a" ]]; then
     echo -e "${Cyan}libdevmapper.a compiled successfully.${Off}"
 
     # Cleanup
-    rm -f "${SCRIPT_DIR}/LVM2.2.03.02.tgz"
+    rm -f "${HOME_DIR}/LVM2.2.03.02.tgz"
     rm -rf "${lvm2_src}"
 
     chown ubuntu "$lvm2_log"
@@ -355,8 +324,8 @@ fi
 # Compile cryptsetup 2.4.3 from source if binary is missing
 if [[ ! -x "$CRYPTSETUP_BINARY" ]]; then
     echo -e "\n${Cyan}Compiling cryptsetup 2.4.3 from source...${Off}"
-    cryptsetup_log="${SCRIPT_DIR}/cryptsetup_compile.log"
-    cryptsetup_src="${SCRIPT_DIR}/cryptsetup-2.4.3"
+    cryptsetup_log="${HOME_DIR}/cryptsetup_compile.log"
+    cryptsetup_src="${HOME_DIR}/cryptsetup-2.4.3"
 
     # Install build dependencies from old-releases (apt-get no longer works on Ubuntu 19.10)
     echo "Installing build dependencies..." | tee "$cryptsetup_log"
@@ -373,7 +342,7 @@ if [[ ! -x "$CRYPTSETUP_BINARY" ]]; then
             "main/libs/libsepol/libsepol1-dev_2.9-2_${host_arch}.deb"
         )
     for dep in "${deps[@]}"; do
-        deb="${SCRIPT_DIR}/$(basename "$dep")"
+        deb="${HOME_DIR}/$(basename "$dep")"
         if ! dpkg-query -s "$(basename "$dep" | cut -d_ -f1)" >/dev/null 2>&1; then
             wget -q --connect-timeout=10 "${old_releases}/${dep}" -O "$deb" >> "$cryptsetup_log" 2>&1
             if [[ ! -s "$deb" ]]; then
@@ -390,9 +359,9 @@ if [[ ! -x "$CRYPTSETUP_BINARY" ]]; then
     echo "Downloading cryptsetup 2.4.3 source..." | tee -a "$cryptsetup_log"
     wget -q --connect-timeout=10 \
         "https://cdn.kernel.org/pub/linux/utils/cryptsetup/v2.4/cryptsetup-2.4.3.tar.gz" \
-        -O "${SCRIPT_DIR}/cryptsetup-2.4.3.tar.gz" >> "$cryptsetup_log" 2>&1
+        -O "${HOME_DIR}/cryptsetup-2.4.3.tar.gz" >> "$cryptsetup_log" 2>&1
 
-    if [[ ! -s "${SCRIPT_DIR}/cryptsetup-2.4.3.tar.gz" ]]; then
+    if [[ ! -s "${HOME_DIR}/cryptsetup-2.4.3.tar.gz" ]]; then
         ding
         echo -e "${Error}ERROR${Off} Failed to download cryptsetup source!"
         exit 1
@@ -400,7 +369,7 @@ if [[ ! -x "$CRYPTSETUP_BINARY" ]]; then
 
     # Extract
     echo "Extracting..." | tee -a "$cryptsetup_log"
-    tar xzf "${SCRIPT_DIR}/cryptsetup-2.4.3.tar.gz" -C "$SCRIPT_DIR" >> "$cryptsetup_log" 2>&1
+    tar xzf "${HOME_DIR}/cryptsetup-2.4.3.tar.gz" -C "$HOME_DIR" >> "$cryptsetup_log" 2>&1
     chown -R ubuntu:ubuntu "${cryptsetup_src}"
 
     # Configure and compile
@@ -438,11 +407,11 @@ if [[ ! -x "$CRYPTSETUP_BINARY" ]]; then
     echo -e "${Cyan}cryptsetup compiled successfully.${Off}"
 
     # Cleanup source files to save space
-    rm -f "${SCRIPT_DIR}/cryptsetup-2.4.3.tar.gz"
-    mv "${cryptsetup_src}/cryptsetup.static" "${SCRIPT_DIR}/cryptsetup-static"
+    rm -f "${HOME_DIR}/cryptsetup-2.4.3.tar.gz"
+    mv "${cryptsetup_src}/cryptsetup.static" "${HOME_DIR}/cryptsetup-static"
     rm -rf "${cryptsetup_src}"
 
-    chown ubuntu "${SCRIPT_DIR}/cryptsetup-static"
+    chown ubuntu "${HOME_DIR}/cryptsetup-static"
     chown ubuntu "$cryptsetup_log"
 fi
 
@@ -701,6 +670,29 @@ if [[ ! -d "${mount_path}/$mount_dir" ]]; then
     # Allow user to unmount volume from UI
     chown ubuntu "${mount_path}/$mount_dir"
 fi
+
+
+# Load patched btrfs module if available (fixes Synology custom root flags)
+load_btrfs_module(){
+    if [[ -f "$BTRFS_MODULE" ]]; then
+        echo -e "\n${Cyan}Loading patched btrfs module...${Off}"
+        # Load required dependencies
+        modprobe raid6_pq 2>/dev/null
+        modprobe xor 2>/dev/null
+        modprobe zstd 2>/dev/null
+        modprobe libcrc32c 2>/dev/null
+        # Unload existing btrfs module if loaded
+        rmmod btrfs 2>/dev/null
+        # Load patched module
+        if insmod "$BTRFS_MODULE"; then
+            echo -e "${Cyan}Patched btrfs module loaded successfully.${Off}"
+        else
+            echo -e "${Error}ERROR${Off} Failed to load patched btrfs module!"
+            echo "Continuing with default btrfs module..."
+        fi
+    fi
+}
+load_btrfs_module
 
 
 # NEED TO MOUNT EACH DEVICE PATH IN ARRAY IF ALL SELECTED
