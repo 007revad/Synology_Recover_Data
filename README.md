@@ -77,7 +77,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
     - A Synology compatible btrfs driver is required to mount Synology btrfs volumes, and the **setup_ubuntu_usb.ps1** script adds it to your Ubuntu 19.10 USB drive.
     - Download the latest [Synology_Recover_Data_script zip file](https://github.com/007revad/Synology_Recover_Data/releases).
     - Right-click the downloaded Synology_Recover_Data_script zip file, select Properties, check Unblock, click OK, then extract.
-    - Right-click on **setup_ubuntu_usb.ps1** and select **Run with PowerShell**, or run from a PowerShell window with .\setup_ubuntu_usb.ps1.
+    - Right-click on **setup_ubuntu_usb.ps1** and select **Run with PowerShell**.
     - Enter your USB drive's drive letter when asked.
     <p align="left"> &nbsp; &nbsp;<img src="/images/powershell.png"></p>
 8. You can now reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
