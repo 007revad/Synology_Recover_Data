@@ -43,7 +43,6 @@ The same environment rules as on Synology's web page apply:
 - Volumes using the Btrfs or ext4 file systems
 - Encrypted volumes using the Btrfs or ext4 file systems
 - Ubuntu 19.10 (Eoan Ermine) only (Synology's recommended 18.04 has a bug with persistent partition)
-    - Kernel 4.15.0-108 is required to mount Synology btrfs volumes, and the patch_ubuntu_usb.ps1 script adds it to your Ubuntu 19.10 USB drive.
 
 > **NOTE** <br>
 > Ubuntu 18.04 no longer works. Ubuntu deleted it's package archive. <br>
@@ -65,7 +64,7 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
 3. Download the **Desktop image** for [Ubuntu version 19.10 Eoan Ermine](https://old-releases.ubuntu.com/releases/19.10/)
    - Synology's recommended 18.04 has a bug with persistent partition so any changes you make in Ubuntu will be lost when you shut down Ubuntu.
    - Newer Ubuntu versions like 20.04.6 LTS and 22.04.4 LTS require an 8GB USB drive and install an mdadm version that won't work with Synology's superblock location and a kernel that prevents mounting Synology's btrfs volumes.
-   - Kernel 4.15.0-108 is required for mounting btrfs volumes. See step 7, below.
+   - A Synology compatible btrfs driver is required for mounting btrfs volumes. See step 7, below.
 4. You'll need a 4GB or larger USB drive.
 5. Prepare a Ubuntu environment by following the instructions in [this tutorial](https://ubuntu.com/tutorials/create-a-usb-stick-on-windows) with 2 exceptions:
     - Select your downloaded Ubuntu 19.10 iso file.
@@ -75,21 +74,21 @@ At the moment the script only supports mounting 1 volume at a time. You'd need t
     - Find your [NASNAME]_volume#.rkey for each encrypted volume. e.g. MYNAS_volume1.rkey, DISKSTATION_volume1.rkey or RACKSTATION_volume1.rkey etc.
     - Copy the *.rkey file or files to a USB drive or network share.
 7. Once Rufus has finished creating the boot drive you need to run the PowerShell script. 
-    - Kernel 4.15.0-108 is required to mount Synology btrfs volumes, and the **patch_ubuntu_usb.ps1** script adds it to your Ubuntu 19.10 USB drive.
+    - A Synology compatible btrfs driver is required to mount Synology btrfs volumes, and the **setup_ubuntu_usb.ps1** script adds it to your Ubuntu 19.10 USB drive.
     - Download the latest [Synology_Recover_Data_script zip file](https://github.com/007revad/Synology_Recover_Data/releases).
     - Right-click the downloaded Synology_Recover_Data_script zip file, select Properties, check Unblock, click OK, then extract.
-    - Right-click on **patch_ubuntu_usb.ps1** and select **Run with PowerShell**, or run from a PowerShell window with .\patch_ubuntu_usb.ps1.
+    - Right-click on **setup_ubuntu_usb.ps1** and select **Run with PowerShell**, or run from a PowerShell window with .\setup_ubuntu_usb.ps1.
     - Enter your USB drive's drive letter when asked.
     <p align="left"> &nbsp; &nbsp;<img src="/images/powershell.png"></p>
 8. You can now reboot the computer, [enter the BIOS](https://www.tomshardware.com/reviews/bios-keys-to-access-your-firmware,5732.html) and set it to boot from the USB drive, and boot into Ubuntu.
     - I highly recommend unplugging the SATA cables from the PC's drives, while the computer is turned off, so you don't accidentally install Ubuntu on them.
-9. **IMPORTANT!** When you see the GRUB boot menu select "**Try Ubuntu (kernel 4.15.0-108)**".
+9. **IMPORTANT!** When you see the GRUB boot menu select "**Try Ubuntu without installing**".
 
 ### Extra steps if the volume is encrypted
 
 After booting into Ubuntu:
 1. Plug in the USB drive containing the *.rkey file or files, or browse to the network share where your *.rkey file or files are located.
-3. Copy the *.rkey file or files to Home.
+2. Copy the *.rkey file or files to Home.
 
 ### Setup in Ubuntu - only needed for v2.0.16 and older
 
@@ -120,7 +119,7 @@ After booting into Ubuntu:
     <p align="left"> &nbsp; <img src="/images/run-script-new.png"></p>
 
 **Note:** For v2.0.16 and older:
-Type `sudo -i /home/syno_recover_data.sh` and press enter.
+Type `sudo -i /home/ubuntu/syno_recover_data.sh` and press enter.
  
 
 ### Accessing your data
