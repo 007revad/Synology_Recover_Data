@@ -56,7 +56,7 @@ MDADM_BINARY="${HOME_DIR}/mdadm-3.4"
 BTRFS_MODULE="${SCRIPT_DIR}/btrfs.ko"
 CRYPTSETUP_BINARY="${HOME_DIR}/cryptsetup-static"
 
-scriptver="v2.0.19"
+scriptver="v2.0.20"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -687,9 +687,15 @@ load_btrfs_module(){
         if insmod "$BTRFS_MODULE"; then
             echo -e "${Cyan}Patched btrfs module loaded successfully.${Off}"
         else
+            ding
             echo -e "${Error}ERROR${Off} Failed to load patched btrfs module!"
             echo "Continuing with default btrfs module..."
         fi
+    else
+        ding
+        echo -e "\n${Error}ERROR${Off} Patched btrfs module not found!"
+        echo "$BTRFS_MODULE not found!"
+        echo "Continuing with default btrfs module..."
     fi
 }
 load_btrfs_module
