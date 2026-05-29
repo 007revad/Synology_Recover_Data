@@ -12,7 +12,10 @@ Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Find files in the same directory as this script
-$ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
+# Use $PSScriptRoot (works in both PS 5.1 and PS 7); it's always set when
+# running as a script, whereas $MyInvocation.MyCommand.Path can be $null
+# in some hosts or when the script is dot-sourced.
+$ScriptDir  = $PSScriptRoot
 $btrfsSrc   = Join-Path $ScriptDir "btrfs.ko"
 $recoverSrc = Join-Path $ScriptDir "syno_recover_data.sh"
 
@@ -34,7 +37,9 @@ if (-not (Test-Path $recoverSrc)) {
 
 # List removable drives to help user identify the correct one
 Write-Host "Removable drives currently available:" -ForegroundColor Cyan
-$removableDrives = Get-WmiObject Win32_LogicalDisk | Where-Object { $_.DriveType -eq 2 }
+# Use Get-CimInstance instead of Get-WmiObject so the script works on both
+# Windows PowerShell 5.1 and PowerShell 7.x (Get-WmiObject was removed in PS 7).
+$removableDrives = Get-CimInstance -ClassName Win32_LogicalDisk -Filter 'DriveType = 2'
 if ($removableDrives) {
     foreach ($drive in $removableDrives) {
         $size  = [math]::Round($drive.Size / 1GB, 0)
@@ -47,10 +52,34 @@ if ($removableDrives) {
 Write-Host ""
 
 # Prompt for drive letter
-Write-Host "Enter the drive letter of your Ubuntu 19.10 USB drive (e.g. G): " -ForegroundColor Cyan -NoNewline
-$letter   = Read-Host
-$letter   = $letter.Trim().TrimEnd(':').ToUpper()
+# Loop until the user enters a single A-Z letter that maps to an existing drive,
+# otherwise an empty/garbage input would produce confusing "could not find :\..." errors below.
+do {
+    Write-Host "Enter the drive letter of your Ubuntu 19.10 USB drive (e.g. G): " -ForegroundColor Cyan -NoNewline
+    $letter = (Read-Host).Trim().TrimEnd(':').ToUpper()
+    if ($letter -notmatch '^[A-Z]$') {
+        Write-Host "  Please enter a single letter (A-Z)." -ForegroundColor Yellow
+        $letter = $null
+    } elseif (-not (Test-Path "${letter}:\")) {
+        Write-Host "  Drive ${letter}: was not found." -ForegroundColor Yellow
+        $letter = $null
+    }
+} until ($letter)
 $UsbDrive = "${letter}:"
+
+# Safety check: if the chosen letter isn't in the removable-drives list, make the
+# user explicitly confirm. Guards against accidentally typing a fixed/system drive.
+$removableLetters = @($removableDrives | ForEach-Object { $_.DeviceID.TrimEnd(':').ToUpper() })
+if ($removableLetters -notcontains $letter) {
+    Write-Host ""
+    Write-Host "WARNING: ${UsbDrive} is NOT detected as a removable drive." -ForegroundColor Yellow
+    Write-Host "Type 'YES' to continue anyway: " -ForegroundColor Yellow -NoNewline
+    if ((Read-Host) -ne 'YES') {
+        Write-Host "Aborted." -ForegroundColor Red
+        Read-Host "Press Enter to exit"
+        exit 1
+    }
+}
 
 Write-Host ""
 
@@ -94,7 +123,15 @@ if (-not (Test-Path $btrfsDest)) {
     Read-Host "Press Enter to exit"
     exit 1
 }
-Write-Host "Copied btrfs.ko successfully ($([math]::Round((Get-Item $btrfsDest).Length / 1MB, 1)) MB)." -ForegroundColor Green
+# Verify the copy by SHA-256 hash, not just by existence. Test-Path returns true
+# even on a truncated/corrupt copy, which is a real risk with cheap USB media.
+if ((Get-FileHash $btrfsSrc -Algorithm SHA256).Hash -ne (Get-FileHash $btrfsDest -Algorithm SHA256).Hash) {
+    Write-Host "ERROR: btrfs.ko on USB drive does not match source (hash mismatch). The copy is corrupt." -ForegroundColor Red
+    Write-Host ""
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+Write-Host "Copied btrfs.ko successfully ($([math]::Round((Get-Item $btrfsDest).Length / 1MB, 1)) MB, hash-verified)." -ForegroundColor Green
 
 # Copy syno_recover_data.sh to USB drive root
 $recoverDest = "$UsbDrive\syno_recover_data.sh"
@@ -114,7 +151,14 @@ if (-not (Test-Path $recoverDest)) {
     Read-Host "Press Enter to exit"
     exit 1
 }
-Write-Host "Copied syno_recover_data.sh successfully." -ForegroundColor Green
+# Verify the copy by SHA-256 hash (see note above on btrfs.ko).
+if ((Get-FileHash $recoverSrc -Algorithm SHA256).Hash -ne (Get-FileHash $recoverDest -Algorithm SHA256).Hash) {
+    Write-Host "ERROR: syno_recover_data.sh on USB drive does not match source (hash mismatch). The copy is corrupt." -ForegroundColor Red
+    Write-Host ""
+    Read-Host "Press Enter to exit"
+    exit 1
+}
+Write-Host "Copied syno_recover_data.sh successfully (hash-verified)." -ForegroundColor Green
 
 Write-Host ""
 Write-Host "USB drive setup successfully!" -ForegroundColor Green
