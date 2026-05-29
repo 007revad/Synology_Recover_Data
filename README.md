@@ -19,14 +19,14 @@ Now supports encrypted volumes.
 <details>
   <summary>Click here to see the list</summary>
 
-| Drive source | DSM version    | Btrfs/Ext | Storage Pool type | RAID  | Encrypted | Notes           |
-|--------------|----------------|-----------|-------------------|-------|-----------|-----------------|
-| DS925+       | 7.3.2 Update 3 | Btrfs     | Multiple Volume   | SHR   | no        | 3 drives        |
-| DS916+       | 7.2.1 Update 9 | Btrfs     | Single Volume     | SHR   | no        | 4 drives        |
-| DS720+       | 7.2.1 Update 4 | Btrfs     | Multiple Volume   | SHR   | Volume    | Single drive    |
-| DS720+       | 7.2.1 Update 4 | Btrfs     | Multiple Volume   | SHR   | no        | Single drive    |
-| DS1812+      | 6.2.4 Update 7 | Btrfs     | Multiple Volume   | SHR   | no        | Single drive    |
-| DS1812+      | 6.2.4 Update 7 | Btrfs     | Single Volume     | Basic | no        | **Failed, faulty HDD** |
+| Drive source | DSM version    | Btrfs/Ext | Storage Pool type | RAID   | Encrypted | Notes           |
+|--------------|----------------|-----------|-------------------|--------|-----------|-----------------|
+| DS925+       | 7.3.2 Update 3 | Btrfs     | Multiple Volume   | SHR    | no        | 3 drives        |
+| DS916+       | 7.2.1 Update 9 | Btrfs     | Single Volume     | RAID 6 | no        | 4 drives        |
+| DS720+       | 7.2.1 Update 4 | Btrfs     | Multiple Volume   | SHR    | Volume    | Single drive    |
+| DS720+       | 7.2.1 Update 4 | Btrfs     | Multiple Volume   | SHR    | no        | Single drive    |
+| DS1812+      | 6.2.4 Update 7 | Btrfs     | Multiple Volume   | SHR    | no        | Single drive    |
+| DS1812+      | 6.2.4 Update 7 | Btrfs     | Single Volume     | Basic  | no        | **Failed, faulty HDD** |
 
 </details>
 
