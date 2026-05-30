@@ -1,3 +1,7 @@
+v2.022
+- Now shows the Synology model and OS version that the drives are from.
+  - OS version can be DSM, DSMUC, DSM_Enterprise or BSM.
+
 v2.0.21
 - Bug fix for RAID 5, 6, 10 and SHR with more than 2 drives using btrfs.
   - Now includes, and loads, a Synology compatible btrfs.ko module for RAID 5, 6, 10 and SHR with more than 2 drives.

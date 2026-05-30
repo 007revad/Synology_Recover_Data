@@ -43,8 +43,6 @@
 #
 #---------------------------------------------------------------------------------------
 
-#mount_path="/mnt"
-#mount_path="/media"
 mount_path="/home/ubuntu"
 
 home_path="/home/ubuntu"  # Location of .rkey files for decrypting volumes
@@ -53,10 +51,10 @@ home_path="/home/ubuntu"  # Location of .rkey files for decrypting volumes
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOME_DIR="/home/ubuntu"  # Location for log files and compiled binaries
 MDADM_BINARY="${HOME_DIR}/mdadm-3.4"
-BTRFS_MODULE="${SCRIPT_DIR}/btrfs.ko"
+BTRFS_MODULE="/cdrom/btrfs.ko"
 CRYPTSETUP_BINARY="${HOME_DIR}/cryptsetup-static"
 
-scriptver="v2.0.21"
+scriptver="v2.0.22"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
@@ -139,19 +137,11 @@ install_executable(){
         apt-get install -y "lvm2" 1>/dev/null
         code="$?"
     else
-        #if ! apt list --installed | grep -q "^${1}/"; then  # Don't use apt in script
-        #if ! apt-cache show "$1" >/dev/null; then
         # https://stackoverflow.com/questions/1298066/how-can-i-check-if-a-package-is-installed-and-install-it-if-not
         if ! dpkg-query -s "$1" >/dev/null; then
             echo -e "\n${Cyan}Installing $1${Off}"
-#            if [[ $1 == "mdadm" ]]; then
-#                # apt-get won't install mdadm in Ubuntu 19.10
-#                apt install -y mdadm 1>/dev/null
-#                code="$?"
-#            else
-                apt-get install -y "$1" 1>/dev/null
-                code="$?"
-#            fi
+            apt-get install -y "$1" 1>/dev/null
+            code="$?"
         fi
     fi
     if [[ $code -gt "0" ]]; then
@@ -160,9 +150,55 @@ install_executable(){
     fi
 }
 
-# Install curl if missing
-# Changed to use wget instead to avoid installing curl
-#install_executable curl
+get_syno_info(){
+    local drive base_dev sys_dev
+    local version_file synoinfo_file
+    local os_name productversion base nano model version_str
+    local tmp_dir
+    tmp_dir="${HOME_DIR}/syno_system"
+    mkdir -p "$tmp_dir"
+
+    # Get base devices from member drives (e.g. /dev/sdb5 -> /dev/sdb)
+    # Then try partition 1 on each as the system partition
+    for drive in "${member_drives[@]}"; do
+        base_dev=$(echo "$drive" | sed 's/[0-9]*$//')
+        sys_dev="${base_dev}1"
+        [[ ! -b "$sys_dev" ]] && continue
+
+        # Try btrfs first (newer DSM), then ext4 (older DSM)
+        local mounted=0
+        if mount -t btrfs -o ro,noexec "$sys_dev" "$tmp_dir" 2>/dev/null; then
+            mounted=1
+        elif mount -t ext4 -o ro,noexec "$sys_dev" "$tmp_dir" 2>/dev/null; then
+            mounted=1
+        fi
+
+        if [[ $mounted -eq 1 ]]; then
+            version_file="${tmp_dir}/etc.defaults/VERSION"
+            synoinfo_file="${tmp_dir}/etc.defaults/synoinfo.conf"
+            if [[ -f "$version_file" ]] && [[ -f "$synoinfo_file" ]]; then
+                productversion=$(grep "^productversion=" "$version_file" | cut -d'"' -f2)
+                base=$(grep "^base=" "$version_file" | cut -d'"' -f2)
+                nano=$(grep "^nano=" "$version_file" | cut -d'"' -f2)
+                os_name=$(grep "^os_name=" "$version_file" | cut -d'"' -f2)
+                model=$(grep "^upnpmodelname=" "$synoinfo_file" | cut -d'"' -f2)
+                # DSM 6 and older don't have os_name
+                [[ -z "$os_name" ]] && os_name="DSM"
+                # Build version string
+                version_str="${os_name} ${productversion}-${base}"
+                [[ -n "$nano" ]] && [[ "$nano" != "0" ]] && version_str+=" Update ${nano}"
+                echo -e "\nNAS model:      ${Cyan}${model}${Off}"
+                echo -e "NAS OS version: ${Cyan}${version_str}${Off}"
+                umount -l "$tmp_dir"
+                rmdir "$tmp_dir"
+                return 0
+            fi
+            umount -l "$tmp_dir"
+        fi
+    done
+    rmdir "$tmp_dir" 2>/dev/null
+}
+
 
 #------------------------------------------------------------------------------
 # Check latest release with GitHub API
@@ -189,11 +225,6 @@ fi
 
 #------------------------------------------------------------------------------
 
-# Install mdadm, lvm2 and btrfs-progs if missing
-#install_executable mdadm
-#install_executable lvm2
-#install_executable btrfs-progs
-
 # Compile mdadm-3.4 from source if binary is missing
 if [[ ! -x "$MDADM_BINARY" ]]; then
     echo -e "\n${Cyan}Compiling mdadm 3.4 from source...${Off}"
@@ -202,8 +233,7 @@ if [[ ! -x "$MDADM_BINARY" ]]; then
 
     # Install build dependencies
     # apt-get no longer works in Ubuntu 19.10 (apt repo no longer exists)
-    #apt-get install -y build-essential > "$mdadm_log" 2>&1
-
+    
     # Download source
     echo "Downloading mdadm 3.4 source..." | tee "$mdadm_log"
     wget -q --connect-timeout=10 \
@@ -416,8 +446,6 @@ if [[ ! -x "$CRYPTSETUP_BINARY" ]]; then
 fi
 
 # Assemble all the drives removed from the Synology NAS
-#if which mdadm >/dev/null; then
-#if which "$MDADM_BINARY" >/dev/null; then
 if [[ -x "$MDADM_BINARY" ]]; then
     echo -e "\n$("$MDADM_BINARY" --version 2>&1)"
     echo -e "\nAssembling your Synology drives"
@@ -427,14 +455,17 @@ if [[ -x "$MDADM_BINARY" ]]; then
     # -f --force     Assemble the array even if some superblocks appear out-of-date.
     #                This involves modifying the superblocks.
     # -R --run       Try to start the array even if not enough devices for a full array are present.
-#    if ! mdadm -AsfR && vgchange -ay ; then
-#        ding
-#        echo -e "${Error}ERROR${Off} Assembling drives failed!"
-#        exit 1
-    #mdadm -AsfR  # Ignore "no arrays found" because it could be a single drive
     "$MDADM_BINARY" -AsfR  # Ignore "no arrays found" because it could be a single drive
-    vgchange -ay
-#    fi
+    vgchange_output=$(vgchange -ay 2>&1)
+    echo "$vgchange_output" | grep -v "WARNING"  # Show output without warnings
+
+    if echo "$vgchange_output" | grep -q "not initialized in udev database"; then
+        ding
+        echo -e "\n${Error}ERROR${Off} LVM volumes not initialized in udev database."
+        echo "This is usually caused by stale state from a previous run."
+        echo "Please reboot and try again."
+        exit 1
+    fi
 
     # Get member drives and disable their standby timers
     mapfile -t member_drives < <("$MDADM_BINARY" --detail --scan 2>/dev/null | \
@@ -442,6 +473,10 @@ if [[ -x "$MDADM_BINARY" ]]; then
         xargs -I{} "$MDADM_BINARY" --detail {} 2>/dev/null | \
         awk '/\/dev\/sd/ {print $NF}' | sort -u)
 
+    # Get NAS model and DSM version from system partition
+    get_syno_info
+
+    # Disable standby timers on source drives
     if [[ ${#member_drives[@]} -gt 0 ]]; then
         echo -e "\nDisabling standby timers on source drives"
         for dev in "${member_drives[@]}"; do
@@ -455,13 +490,12 @@ else
 fi
 
 
-echo -e "\nlvs"                                   # debug
-lvs | grep 'volume_'                              # debug
-echo ""                                           # debug
-echo -e "cat /proc/mdstat"                        # debug
-#cat /proc/mdstat | grep '^md' | awk '{print $1}'  # debug
-cat /proc/mdstat                                  # debug
-echo ""                                           # debug
+echo -e "\nlvs"             # debug
+lvs | grep 'volume_'        # debug
+echo ""                     # debug
+echo -e "cat /proc/mdstat"  # debug
+cat /proc/mdstat            # debug
+echo ""                     # debug
 
 
 # Get device path(s)
@@ -612,9 +646,6 @@ if [[ $maybe_encripted == "yes" ]]; then
         get_rkeys
         select_rkey
 
-        # Install cryptsetup if missing
-        #install_executable cryptsetup
-
         # Decode recovery key to file
         base64_decode_output_path="${recovery_key%.*}"
         base64 --decode "${recovery_key}" > "${base64_decode_output_path}"
@@ -626,8 +657,6 @@ if [[ $maybe_encripted == "yes" ]]; then
         fi
 
         # Test recovery key
-        # cryptsetup open --test-passphrase /dev/vgX/volume_Y -S 1 -d ${base64_decode_output_path}
-        #cryptsetup open --test-passphrase "$device_path" -S 1 -d "${base64_decode_output_path}"
         "$CRYPTSETUP_BINARY" open --test-passphrase "$device_path" -S 1 -d "${base64_decode_output_path}"
         code="$?"
         if [[ $code -gt "0" ]]; then
@@ -646,8 +675,6 @@ if [[ $maybe_encripted == "yes" ]]; then
             dmsetup remove -f "/dev/mapper/$cryptvol"
         fi
 
-        # cryptsetup open --allow-discards /dev/vgX/volume_Y cryptvol_Y -S 1 -d ${base64_decode_output_path}
-        #cryptsetup open --allow-discards "$device_path" "$cryptvol" -S 1 -d "${base64_decode_output_path}"
         "$CRYPTSETUP_BINARY" open --allow-discards "$device_path" "$cryptvol" -S 1 -d "${base64_decode_output_path}"
         code="$?"
         #if [[ $code -gt "0" ]]; then exit 1; fi
