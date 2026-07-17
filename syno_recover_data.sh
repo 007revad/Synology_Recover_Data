@@ -54,7 +54,7 @@ MDADM_BINARY="${HOME_DIR}/mdadm-3.4"
 BTRFS_MODULE="/cdrom/btrfs.ko"
 CRYPTSETUP_BINARY="${HOME_DIR}/cryptsetup-static"
 
-scriptver="v2.0.22"
+scriptver="v2.0.23"
 script=Synology_Recover_Data
 repo="007revad/Synology_Recover_Data"
 
