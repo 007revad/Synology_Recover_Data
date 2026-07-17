@@ -562,6 +562,14 @@ else
     exit 1  # No volumes found
 fi
 
+fs_type=$(blkid -o value -s TYPE "$device_path")
+if [[ -z $fs_type ]]; then
+    echo -e "\n${Error}WARNING${Off} Could not detect a filesystem on $device_path"
+    echo "This usually means the volume is corrupted or the array didn't assemble correctly."
+else
+    echo -e "\nFile System is: ${Cyan}$fs_type${Off}"
+fi
+
 get_mount_dir(){ 
     case "${1,,}" in
         /dev/md*)
@@ -748,6 +756,8 @@ code="$?"
 if [[ $code -gt "0" ]]; then
     ding
     echo -e "${Error}ERROR${Off} $code Failed to mount volume!\n"
+    echo -e "Last 20 kernel log lines (dmesg):"
+    dmesg | tail -20
 else
     # Successful mount has null exit code
     echo -e "\nThe volume is now mounted as ${Cyan}read only.${Off}\n"

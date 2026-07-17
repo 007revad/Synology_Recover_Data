@@ -1,4 +1,8 @@
-v2.022
+v2.0.23
+- Added showing volume's detected file system type.
+- Added showing the last 20 kernel log lines if mounting the volume failed.
+
+v2.0.22
 - Now shows the Synology model and OS version that the drives are from.
   - OS version can be DSM, DSMUC, DSM_Enterprise or BSM.
 
